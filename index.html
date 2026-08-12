@@ -6,48 +6,86 @@
 <title>Shaw · Research</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
+  /* Semantic tokens — light theme by default */
   :root{
-    --brand-50:#f7f2ff;--brand-200:#decdff;--brand-500:#8c5de1;--brand-600:#6a3ebd;--brand-700:#492a7e;
-    --n0:#fff;--n50:#fafafa;--n100:#f4f4f5;--n200:#e4e4e7;--n300:#d4d4d8;--n400:#a1a1ab;--n500:#71717b;--n600:#52525c;--n800:#27272a;--n900:#18181b;
+    --bg:#fafafa; --surface:#ffffff; --surface-2:#f4f4f5;
+    --text:#18181b; --text-2:#27272a; --text-3:#52525c; --muted:#71717b; --faint:#a1a1ab;
+    --border:#e4e4e7; --border-2:#f4f4f5;
+    --brand:#6a3ebd; --brand-strong:#492a7e; --brand-tint:#f7f2ff; --brand-edge:#decdff;
+    --code-bg:#f4f4f5; --pre-bg:#18181b; --pre-fg:#f4f4f5;
     --mono:'Geist Mono','SF Mono',ui-monospace,Menlo,monospace;
+    color-scheme:light;
   }
-  body{font-family:'Geist','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--n50);color:var(--n900);font-size:14.5px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  /* Dark theme — activates on [data-theme="dark"] on <html>, or when the OS asks and no explicit override */
+  :root[data-theme="dark"]{
+    --bg:#0f0f11; --surface:#18181b; --surface-2:#232326;
+    --text:#f4f4f5; --text-2:#e4e4e7; --text-3:#c4c4c8; --muted:#a1a1ab; --faint:#71717b;
+    --border:#2a2a2e; --border-2:#232326;
+    --brand:#c8abff; --brand-strong:#decdff; --brand-tint:#2a1e45; --brand-edge:#3a2263;
+    --code-bg:#232326; --pre-bg:#0a0a0c; --pre-fg:#e4e4e7;
+    color-scheme:dark;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f0f11; --surface:#18181b; --surface-2:#232326;
+      --text:#f4f4f5; --text-2:#e4e4e7; --text-3:#c4c4c8; --muted:#a1a1ab; --faint:#71717b;
+      --border:#2a2a2e; --border-2:#232326;
+      --brand:#c8abff; --brand-strong:#decdff; --brand-tint:#2a1e45; --brand-edge:#3a2263;
+      --code-bg:#232326; --pre-bg:#0a0a0c; --pre-fg:#e4e4e7;
+      color-scheme:dark;
+    }
+  }
+  body{font-family:'Geist','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14.5px;line-height:1.62;-webkit-font-smoothing:antialiased;transition:background .15s,color .15s}
   .app{display:grid;grid-template-columns:264px 1fr;min-height:100vh}
-  .side{background:var(--n0);border-right:1px solid var(--n200);padding:20px 14px;position:sticky;top:0;height:100vh;overflow-y:auto}
+  .side{background:var(--surface);border-right:1px solid var(--border);padding:20px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
   .brand{padding:2px 10px 16px}
   .brand .bt{font-weight:600;font-size:15px}
-  .brand .bs{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-600);margin-top:2px}
-  .navlabel{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--n400);padding:14px 10px 6px}
-  .nav{display:block;padding:7px 10px;border-radius:8px;color:var(--n600);font-size:13.5px;cursor:pointer;text-decoration:none}
-  .nav:hover{background:var(--n100);color:var(--n900)}
-  .nav.on{background:var(--brand-50);color:var(--brand-700);font-weight:500}
-  .nav .a{font-family:var(--mono);font-size:9.5px;color:var(--n400);margin-left:5px}
-  .side .foot{font-size:10px;color:var(--n400);font-family:var(--mono);line-height:1.6;padding:16px 10px}
+  .brand .bs{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);margin-top:2px}
+  .navlabel{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:14px 10px 6px}
+  .nav{display:block;padding:7px 10px;border-radius:8px;color:var(--text-3);font-size:13.5px;cursor:pointer;text-decoration:none}
+  .nav:hover{background:var(--surface-2);color:var(--text)}
+  .nav.on{background:var(--brand-tint);color:var(--brand-strong);font-weight:500}
+  .nav .a{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-left:5px}
+  .side .foot{margin-top:auto;font-size:10px;color:var(--faint);font-family:var(--mono);line-height:1.6;padding:16px 10px}
+  .themetoggle{display:flex;gap:4px;padding:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;margin:14px 10px 4px}
+  .themetoggle button{flex:1;background:none;border:none;font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:6px 4px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}
+  .themetoggle button:hover{color:var(--text)}
+  .themetoggle button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  :root[data-theme="dark"] .themetoggle button.on{box-shadow:0 1px 2px rgba(0,0,0,.4)}
   .main{min-width:0;padding:36px 48px 90px;max-width:940px}
   .content h1{font-size:27px;letter-spacing:-.015em;line-height:1.25;margin:0 0 14px}
-  .content h2{font-size:19px;letter-spacing:-.01em;margin:34px 0 10px;padding-top:18px;border-top:1px solid var(--n200)}
+  .content h2{font-size:19px;letter-spacing:-.01em;margin:34px 0 10px;padding-top:18px;border-top:1px solid var(--border)}
   .content h3{font-size:15.5px;margin:24px 0 8px}
   .content h4{font-size:14px;margin:18px 0 6px}
-  .content p{margin:0 0 12px;color:var(--n800)}
+  .content p{margin:0 0 12px;color:var(--text-2)}
   .content ul,.content ol{margin:0 0 14px 22px}
   .content li{margin-bottom:4px}
-  .content hr{border:none;border-top:1px solid var(--n200);margin:26px 0}
-  .content blockquote{border-left:3px solid var(--brand-200);background:var(--brand-50);padding:10px 16px;border-radius:0 8px 8px 0;margin:0 0 14px;color:var(--n600)}
-  .content code{font-family:var(--mono);font-size:.86em;background:var(--n100);border:1px solid var(--n200);border-radius:4px;padding:1px 5px}
-  .content pre{background:var(--n900);color:var(--n100);border-radius:10px;padding:16px 18px;overflow-x:auto;margin:0 0 16px;font-size:12.5px;line-height:1.55}
+  .content hr{border:none;border-top:1px solid var(--border);margin:26px 0}
+  .content blockquote{border-left:3px solid var(--brand-edge);background:var(--brand-tint);padding:10px 16px;border-radius:0 8px 8px 0;margin:0 0 14px;color:var(--text-3)}
+  .content code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+  .content pre{background:var(--pre-bg);color:var(--pre-fg);border-radius:10px;padding:16px 18px;overflow-x:auto;margin:0 0 16px;font-size:12.5px;line-height:1.55;border:1px solid var(--border)}
   .content pre code{background:none;border:none;color:inherit;padding:0}
-  .content .tablewrap{overflow-x:auto;margin:0 0 18px;border:1px solid var(--n200);border-radius:10px;background:var(--n0)}
+  .content .tablewrap{overflow-x:auto;margin:0 0 18px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
   .content table{border-collapse:collapse;width:100%;font-size:13px}
-  .content th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--n500);font-weight:500;padding:9px 12px;border-bottom:1px solid var(--n200);background:var(--n50);white-space:nowrap}
-  .content td{padding:8px 12px;border-top:1px solid var(--n100);vertical-align:top}
+  .content th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:9px 12px;border-bottom:1px solid var(--border);background:var(--surface-2);white-space:nowrap}
+  .content td{padding:8px 12px;border-top:1px solid var(--border-2);vertical-align:top;color:var(--text-2)}
   .content tr:first-child td{border-top:none}
-  .content a{color:var(--brand-600);text-decoration:none;border-bottom:1px dashed var(--brand-200)}
-  .content a:hover{color:var(--brand-700)}
-  .content strong{font-weight:600}
-  .crumb{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--n400);margin-bottom:14px}
-  .loading{color:var(--n400);font-family:var(--mono);font-size:12px;padding:40px 0}
-  @media (max-width:860px){.app{grid-template-columns:1fr}.side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--n200)}.main{padding:24px 20px 60px}}
+  .content a{color:var(--brand);text-decoration:none;border-bottom:1px dashed var(--brand-edge)}
+  .content a:hover{color:var(--brand-strong)}
+  .content strong{font-weight:600;color:var(--text)}
+  .crumb{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+  .loading{color:var(--faint);font-family:var(--mono);font-size:12px;padding:40px 0}
+  @media (max-width:720px){.app{grid-template-columns:1fr}.side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border)}.main{padding:24px 20px 60px}}
 </style>
+<script>
+  // Apply theme before paint to avoid a flash of the wrong theme
+  (function(){
+    try {
+      var t = localStorage.getItem('shaw-research-theme');
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    } catch(e){}
+  })();
+</script>
 </head>
 <body>
 <div class="app">
@@ -57,6 +95,11 @@
       <div class="bs">UnifyApps · Navanta</div>
     </div>
     <div id="nav"></div>
+    <div class="themetoggle" role="group" aria-label="Theme">
+      <button data-theme-set="light" title="Light theme">☀ Light</button>
+      <button data-theme-set="dark" title="Dark theme">☾ Dark</button>
+      <button data-theme-set="auto" title="Follow system">◐ Auto</button>
+    </div>
     <div class="foot">Manufacturing agents<br>Research module · draft<br>All figures illustrative</div>
   </aside>
   <div class="main">
@@ -143,6 +186,25 @@ async function load(){
   }catch(e){ el.innerHTML='<p>Could not load <code>'+doc.f+'</code> ('+e.message+').</p>'; }
 }
 window.addEventListener('hashchange',()=>{current=location.hash.slice(1)||'readme';load()});
+
+// theme toggle: light | dark | auto (follow OS)
+const THEME_KEY = 'shaw-research-theme';
+function currentTheme(){
+  const stored = localStorage.getItem(THEME_KEY);
+  return stored === 'light' || stored === 'dark' ? stored : 'auto';
+}
+function applyTheme(mode){
+  if (mode === 'auto') { document.documentElement.removeAttribute('data-theme'); localStorage.removeItem(THEME_KEY); }
+  else { document.documentElement.setAttribute('data-theme', mode); localStorage.setItem(THEME_KEY, mode); }
+  document.querySelectorAll('.themetoggle button').forEach(b=>{
+    b.classList.toggle('on', b.dataset.themeSet === mode);
+  });
+}
+document.querySelectorAll('.themetoggle button').forEach(b=>{
+  b.addEventListener('click', ()=>applyTheme(b.dataset.themeSet));
+});
+applyTheme(currentTheme());
+
 load();
 </script>
 </body>
