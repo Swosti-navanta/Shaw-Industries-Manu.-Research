@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shaw · Research</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --brand-50:#f7f2ff;--brand-200:#decdff;--brand-500:#8c5de1;--brand-600:#6a3ebd;--brand-700:#492a7e;
+    --n0:#fff;--n50:#fafafa;--n100:#f4f4f5;--n200:#e4e4e7;--n300:#d4d4d8;--n400:#a1a1ab;--n500:#71717b;--n600:#52525c;--n800:#27272a;--n900:#18181b;
+    --mono:'Geist Mono','SF Mono',ui-monospace,Menlo,monospace;
+  }
+  body{font-family:'Geist','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--n50);color:var(--n900);font-size:14.5px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .app{display:grid;grid-template-columns:264px 1fr;min-height:100vh}
+  .side{background:var(--n0);border-right:1px solid var(--n200);padding:20px 14px;position:sticky;top:0;height:100vh;overflow-y:auto}
+  .brand{padding:2px 10px 16px}
+  .brand .bt{font-weight:600;font-size:15px}
+  .brand .bs{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-600);margin-top:2px}
+  .navlabel{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--n400);padding:14px 10px 6px}
+  .nav{display:block;padding:7px 10px;border-radius:8px;color:var(--n600);font-size:13.5px;cursor:pointer;text-decoration:none}
+  .nav:hover{background:var(--n100);color:var(--n900)}
+  .nav.on{background:var(--brand-50);color:var(--brand-700);font-weight:500}
+  .nav .a{font-family:var(--mono);font-size:9.5px;color:var(--n400);margin-left:5px}
+  .side .foot{font-size:10px;color:var(--n400);font-family:var(--mono);line-height:1.6;padding:16px 10px}
+  .main{min-width:0;padding:36px 48px 90px;max-width:940px}
+  .content h1{font-size:27px;letter-spacing:-.015em;line-height:1.25;margin:0 0 14px}
+  .content h2{font-size:19px;letter-spacing:-.01em;margin:34px 0 10px;padding-top:18px;border-top:1px solid var(--n200)}
+  .content h3{font-size:15.5px;margin:24px 0 8px}
+  .content h4{font-size:14px;margin:18px 0 6px}
+  .content p{margin:0 0 12px;color:var(--n800)}
+  .content ul,.content ol{margin:0 0 14px 22px}
+  .content li{margin-bottom:4px}
+  .content hr{border:none;border-top:1px solid var(--n200);margin:26px 0}
+  .content blockquote{border-left:3px solid var(--brand-200);background:var(--brand-50);padding:10px 16px;border-radius:0 8px 8px 0;margin:0 0 14px;color:var(--n600)}
+  .content code{font-family:var(--mono);font-size:.86em;background:var(--n100);border:1px solid var(--n200);border-radius:4px;padding:1px 5px}
+  .content pre{background:var(--n900);color:var(--n100);border-radius:10px;padding:16px 18px;overflow-x:auto;margin:0 0 16px;font-size:12.5px;line-height:1.55}
+  .content pre code{background:none;border:none;color:inherit;padding:0}
+  .content .tablewrap{overflow-x:auto;margin:0 0 18px;border:1px solid var(--n200);border-radius:10px;background:var(--n0)}
+  .content table{border-collapse:collapse;width:100%;font-size:13px}
+  .content th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--n500);font-weight:500;padding:9px 12px;border-bottom:1px solid var(--n200);background:var(--n50);white-space:nowrap}
+  .content td{padding:8px 12px;border-top:1px solid var(--n100);vertical-align:top}
+  .content tr:first-child td{border-top:none}
+  .content a{color:var(--brand-600);text-decoration:none;border-bottom:1px dashed var(--brand-200)}
+  .content a:hover{color:var(--brand-700)}
+  .content strong{font-weight:600}
+  .crumb{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--n400);margin-bottom:14px}
+  .loading{color:var(--n400);font-family:var(--mono);font-size:12px;padding:40px 0}
+  @media (max-width:860px){.app{grid-template-columns:1fr}.side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--n200)}.main{padding:24px 20px 60px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <div class="bt">Shaw · Research</div>
+      <div class="bs">UnifyApps · Navanta</div>
+    </div>
+    <div id="nav"></div>
+    <div class="foot">Manufacturing agents<br>Research module · draft<br>All figures illustrative</div>
+  </aside>
+  <div class="main">
+    <div class="crumb" id="crumb"></div>
+    <div class="content" id="content"><div class="loading">Loading…</div></div>
+  </div>
+</div>
+<script>
+const DOCS = [
+  {group:'Start here'},
+  {id:'readme', t:'Module index', f:'README.md'},
+  {group:'Foundations'},
+  {id:'personas', t:'Personas', a:'01', f:'01-personas.md'},
+  {group:'Section deep-dives'},
+  {id:'overview', t:'Overview · inbox', a:'02', f:'02-journeys/01-overview.md'},
+  {id:'scheduling', t:'Scheduling', a:'Sawyer', f:'02-journeys/02-scheduling.md'},
+  {id:'yarn', t:'Yarn', a:'Sable', f:'02-journeys/03-yarn.md'},
+  {id:'make', t:'Make', a:'Rowan', f:'02-journeys/04-make.md'},
+  {id:'quality', t:'Quality', a:'Wren', f:'02-journeys/05-quality.md'},
+  {id:'thresholds', t:'Thresholds · dial', a:'02', f:'02-journeys/06-thresholds.md'},
+  {group:'Synthesis'},
+  {id:'pains', t:'Pain-point register', a:'03', f:'03-pain-points.md'},
+  {id:'blueprint', t:'Service blueprint', a:'04', f:'04-service-blueprint.md'},
+];
+let current = location.hash.slice(1) || 'readme';
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function inline(s){
+  return s
+    .replace(/`([^`]+)`/g,(m,c)=>'<code>'+c+'</code>')
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g,'$1<em>$2</em>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,(m,t,u)=>{
+      const doc=DOCS.find(d=>d.f && (u===d.f||u.endsWith(d.f)));
+      if(doc) return '<a href="#'+doc.id+'">'+t+'</a>';
+      return '<a href="'+u+'" target="_blank" rel="noopener">'+t+'</a>';
+    });
+}
+function render(md){
+  const lines=md.split('\n'); const out=[]; let i=0;
+  while(i<lines.length){
+    let L=lines[i];
+    if(/^```/.test(L)){ const buf=[]; i++; while(i<lines.length && !/^```/.test(lines[i])){buf.push(lines[i]);i++} i++;
+      out.push('<pre><code>'+esc(buf.join('\n'))+'</code></pre>'); continue; }
+    if(/^\s*$/.test(L)){ i++; continue; }
+    const h=L.match(/^(#{1,6})\s+(.*)/);
+    if(h){ out.push('<h'+h[1].length+'>'+inline(esc(h[2]))+'</h'+h[1].length+'>'); i++; continue; }
+    if(/^(\s*[-*_]){3,}\s*$/.test(L)){ out.push('<hr>'); i++; continue; }
+    if(/^>/.test(L)){ const buf=[]; while(i<lines.length && /^>/.test(lines[i])){buf.push(lines[i].replace(/^>\s?/,''));i++}
+      out.push('<blockquote>'+render(buf.join('\n'))+'</blockquote>'); continue; }
+    if(L.includes('|') && i+1<lines.length && /^\s*\|?[\s:|-]+\|[\s:|-]*$/.test(lines[i+1])){
+      const rows=[]; const head=L; i+=2;
+      while(i<lines.length && lines[i].includes('|') && !/^\s*$/.test(lines[i])){rows.push(lines[i]);i++}
+      const cells=r=>r.replace(/^\s*\|/,'').replace(/\|\s*$/,'').split('|').map(c=>inline(esc(c.trim())));
+      let t='<div class="tablewrap"><table><thead><tr>'+cells(head).map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>';
+      rows.forEach(r=>{t+='<tr>'+cells(r).map(c=>'<td>'+c+'</td>').join('')+'</tr>'});
+      out.push(t+'</tbody></table></div>'); continue; }
+    if(/^\s*([-*+]|\d+\.)\s+/.test(L)){
+      const ordered=/^\s*\d+\./.test(L); const buf=[];
+      while(i<lines.length && /^\s*([-*+]|\d+\.)\s+/.test(lines[i])){buf.push(lines[i].replace(/^\s*([-*+]|\d+\.)\s+/,''));i++}
+      out.push((ordered?'<ol>':'<ul>')+buf.map(x=>'<li>'+inline(esc(x))+'</li>').join('')+(ordered?'</ol>':'</ul>')); continue; }
+    const buf=[L]; i++;
+    while(i<lines.length && !/^\s*$/.test(lines[i]) && !/^(#{1,6}\s|>|```|\s*([-*+]|\d+\.)\s)/.test(lines[i]) && !(lines[i].includes('|')&&i+1<lines.length&&/^\s*\|?[\s:|-]+\|[\s:|-]*$/.test(lines[i+1]))){buf.push(lines[i]);i++}
+    out.push('<p>'+inline(esc(buf.join(' ')))+'</p>');
+  }
+  return out.join('\n');
+}
+function nav(){
+  document.getElementById('nav').innerHTML = DOCS.map(d=>{
+    if(d.group) return '<div class="navlabel">'+d.group+'</div>';
+    return '<a class="nav'+(d.id===current?' on':'')+'" href="#'+d.id+'">'+d.t+(d.a?'<span class="a">'+d.a+'</span>':'')+'</a>';
+  }).join('');
+}
+async function load(){
+  const doc=DOCS.find(d=>d.id===current)||DOCS[1];
+  current=doc.id; nav();
+  document.getElementById('crumb').textContent='Shaw Research · '+doc.f;
+  const el=document.getElementById('content');
+  el.innerHTML='<div class="loading">Loading…</div>';
+  try{
+    const r=await fetch(doc.f); if(!r.ok) throw new Error(r.status);
+    el.innerHTML=render(await r.text());
+    window.scrollTo(0,0);
+  }catch(e){ el.innerHTML='<p>Could not load <code>'+doc.f+'</code> ('+e.message+').</p>'; }
+}
+window.addEventListener('hashchange',()=>{current=location.hash.slice(1)||'readme';load()});
+load();
+</script>
+</body>
+</html>

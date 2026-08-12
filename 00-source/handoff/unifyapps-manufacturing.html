@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UnifyApps · Manufacturing — prototype</title>
+<style>
+:root{
+  --f:'Geist','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --m:'Geist Mono','SFMono-Regular',Menlo,Consolas,monospace;
+  --b50:#f7f2ff;--b100:#f1e6ff;--b200:#decdff;--b300:#c8abff;--b400:#ab83fb;--b500:#8c5de1;--b600:#6a3ebd;--b700:#492a7e;--b900:#3a2263;
+  --n0:#fff;--n50:#fafafa;--n100:#f4f4f5;--n200:#e4e4e7;--n300:#d4d4d8;--n400:#a1a1ab;--n500:#71717b;--n600:#52525c;--n700:#3f3f47;--n800:#27272a;--n900:#18181b;
+  --warn:#b45309;--warnbg:#fffbeb;--warnbd:#fcd34d;
+  --bad:#b42318;--badbg:#fef3f2;--badbd:#fda29b;
+  --good:#067647;--goodbg:#ecfdf3;--goodbd:#a6f4c5;
+  --surface:#fcfcfb;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f);background:var(--n100);color:var(--n900);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5}
+button{font-family:inherit;font-size:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.app{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+
+/* ---------- sidebar ---------- */
+.side{background:var(--n900);color:#fff;padding:18px 14px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{display:flex;flex-direction:column;gap:2px;padding:0 8px}
+.brand .k{font-family:var(--m);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--b300)}
+.brand .t{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.navgrp{display:flex;flex-direction:column;gap:2px}
+.navgrp .lbl{font-family:var(--m);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--n500);padding:0 8px;margin-bottom:6px}
+.nav{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:var(--n300);text-align:left;width:100%;transition:background .12s}
+.nav:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav.on{background:rgba(255,255,255,.1);color:#fff}
+.nav .ag{width:22px;height:22px;border-radius:6px;background:var(--b500);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex:none}
+.nav.on .ag{background:var(--b400)}
+.nav .meta{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.nav .n{font-size:13.5px;font-weight:500}
+.nav .r{font-size:11px;color:var(--n500)}
+.nav.on .r{color:var(--n400)}
+.nav .badge{margin-left:auto;background:#fff;color:var(--n900);font-family:var(--m);font-size:10px;font-weight:600;padding:2px 6px;border-radius:5px;flex:none}
+.nav .ico{width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.legend{margin-top:auto;border-top:1px solid rgba(255,255,255,.12);padding-top:16px;display:flex;flex-direction:column;gap:10px}
+.legend .lh{font-family:var(--m);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--n500);padding:0 8px}
+.lgrow{display:flex;gap:9px;padding:0 8px;align-items:flex-start}
+.lgrow .sw{width:9px;height:9px;border-radius:3px;margin-top:4px;flex:none}
+.lgrow .tx{font-size:11px;line-height:1.35;color:var(--n400)}
+.lgrow .tx b{display:block;font-family:var(--m);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--n300);font-weight:500}
+
+/* ---------- main ---------- */
+.main{display:flex;flex-direction:column;min-width:0}
+.top{background:var(--n0);border-bottom:1px solid var(--n200);padding:12px 26px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:20}
+.top .crumb{font-size:13px;color:var(--n500)}
+.top .crumb b{color:var(--n900);font-weight:600}
+.demoflag{font-family:var(--m);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--warn);background:var(--warnbg);border:1px solid var(--warnbd);padding:4px 8px;border-radius:6px}
+.spacer{flex:1}
+.needs{display:flex;align-items:center;gap:8px;background:var(--n900);color:#fff;padding:7px 13px;border-radius:8px;font-size:13px;font-weight:500}
+.needs .c{font-family:var(--m);background:#fff;color:var(--n900);border-radius:5px;padding:1px 6px;font-size:11px;font-weight:600}
+.needs.clear{background:var(--goodbg);color:var(--good);border:1px solid var(--goodbd)}
+.body{padding:26px;display:flex;flex-direction:column;gap:18px;max-width:1180px;width:100%}
+
+/* ---------- page head ---------- */
+.phead{display:flex;flex-direction:column;gap:7px}
+.phead .eye{font-family:var(--m);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--b600)}
+.phead h1{font-size:29px;font-weight:600;letter-spacing:-.025em;line-height:1.15}
+.phead .sub{font-size:15.5px;color:var(--n500);max-width:74ch;line-height:1.5}
+
+/* ---------- cards ---------- */
+.card{background:var(--n0);border:1px solid var(--n200);border-radius:13px;padding:18px 20px}
+.card.flat{padding:0;overflow:hidden}
+.ch{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+.ch .t{font-size:15.5px;font-weight:600;letter-spacing:-.01em}
+.ch .s{font-size:12.5px;color:var(--n500)}
+.ch .r{margin-left:auto;font-family:var(--m);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--n400)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid2.wide{grid-template-columns:1.45fr 1fr}
+@media(max-width:1080px){.grid2,.grid2.wide{grid-template-columns:1fr}}
+
+/* ---------- chips ---------- */
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--m);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;padding:3px 7px;border-radius:5px;white-space:nowrap;border:1px solid transparent}
+.chip .d{width:5px;height:5px;border-radius:50%;flex:none}
+.chip.auto{background:var(--b50);color:var(--b700);border-color:var(--b200)}
+.chip.auto .d{background:var(--b500)}
+.chip.limit{background:var(--warnbg);color:var(--warn);border-color:var(--warnbd)}
+.chip.limit .d{background:var(--warn)}
+.chip.person{background:var(--n900);color:#fff}
+.chip.person .d{background:#fff}
+.chip.mute{background:var(--n100);color:var(--n600);border-color:var(--n200)}
+.chip.mute .d{background:var(--n400)}
+.chip.bad{background:var(--badbg);color:var(--bad);border-color:var(--badbd)}
+.chip.bad .d{background:var(--bad)}
+.chip.good{background:var(--goodbg);color:var(--good);border-color:var(--goodbd)}
+.chip.good .d{background:var(--good)}
+
+/* ---------- hero + stat tiles ---------- */
+.hero{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap}
+.hero .v{font-size:54px;font-weight:600;letter-spacing:-.035em;line-height:1}
+.hero .hmeta{display:flex;flex-direction:column;gap:3px;padding-bottom:5px}
+.hero .l{font-size:13.5px;color:var(--n500)}
+.hero .dl{font-size:13px;font-weight:500}
+.hero .dl.bad{color:var(--bad)}
+.hero .dl.good{color:var(--good)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:900px){.tiles{grid-template-columns:repeat(2,1fr)}}
+.tile{border:1px solid var(--n200);border-radius:11px;padding:13px 14px;background:var(--surface);display:flex;flex-direction:column;gap:5px}
+.tile .l{font-size:12.5px;color:var(--n500);line-height:1.3}
+.tile .v{font-size:25px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.tile .d{font-size:11.5px;font-weight:500;color:var(--n500);display:flex;align-items:center;gap:4px}
+.tile .d.bad{color:var(--bad)}
+.tile .d.good{color:var(--good)}
+.tile.alert{border-color:var(--badbd);background:var(--badbg)}
+
+/* ---------- meter ---------- */
+.meter{height:6px;border-radius:3px;background:var(--b100);overflow:hidden;margin-top:2px}
+.meter .f{height:100%;border-radius:3px;background:var(--b500)}
+.meter.warnm{background:var(--warnbd)}
+.meter.warnm .f{background:var(--warn)}
+
+/* ---------- chart ---------- */
+.chartwrap{position:relative}
+.clegend{display:flex;gap:16px;margin-bottom:10px}
+.clegend .i{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--n600)}
+.clegend .k{width:14px;height:2px;border-radius:1px;flex:none}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.ax{font-family:var(--m);font-size:9.5px;fill:var(--n400)}
+.dlabel{font-family:var(--m);font-size:10.5px;font-weight:500;fill:var(--n700)}
+
+/* ---------- feed ---------- */
+.feed{display:flex;flex-direction:column}
+.fitem{display:grid;grid-template-columns:52px 1fr;gap:14px;padding:13px 0;border-top:1px solid var(--n200)}
+.fitem:first-child{border-top:none;padding-top:0}
+.fitem .ts{font-family:var(--m);font-size:11px;color:var(--n400);padding-top:2px;font-variant-numeric:tabular-nums}
+.fitem .co{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fitem .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fitem .tx{font-size:13.5px;line-height:1.5;color:var(--n700)}
+.fitem .tx b{color:var(--n900);font-weight:600}
+.fitem .by{font-family:var(--m);font-size:10.5px;color:var(--b600)}
+.fitem.new{animation:slidein .35s ease}
+@keyframes slidein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* ---------- decision ---------- */
+.decision{border:1.5px solid var(--n900);border-radius:13px;overflow:hidden;background:var(--n0)}
+.dtop{background:var(--n900);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dtop .t{font-size:16px;font-weight:600;letter-spacing:-.01em}
+.dtop .s{font-size:13px;color:var(--n400)}
+.dbody{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.dq{font-size:19px;font-weight:600;letter-spacing:-.015em;line-height:1.35}
+.dq em{font-style:normal;color:var(--b600)}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{border:1px solid var(--n200);border-radius:11px;padding:14px 15px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;background:var(--surface);transition:border-color .12s,background .12s}
+.opt:hover{border-color:var(--n400)}
+.opt.rec{border-color:var(--b300);background:var(--b50)}
+.opt.risky{border-color:var(--badbd);background:var(--badbg)}
+.opt .oi{display:flex;flex-direction:column;gap:6px;min-width:0}
+.opt .on{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.opt .ot{font-size:14.5px;font-weight:600}
+.opt .od{font-size:13px;color:var(--n600);line-height:1.5}
+.opt .ometa{display:flex;gap:16px;flex-wrap:wrap;margin-top:2px}
+.opt .mk{font-family:var(--m);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--n400)}
+.opt .mv{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.opt .oc{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex:none}
+.btn{padding:9px 15px;border-radius:8px;font-size:13.5px;font-weight:500;border:1px solid var(--n300);background:var(--n0);white-space:nowrap;transition:all .12s}
+.btn:hover{border-color:var(--n900)}
+.btn.pri{background:var(--n900);color:#fff;border-color:var(--n900)}
+.btn.pri:hover{background:var(--n800)}
+.btn.sm{padding:6px 11px;font-size:12.5px}
+.hist{background:var(--badbg);border:1px solid var(--badbd);border-radius:9px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start;margin-top:4px}
+.hist .ic{font-size:13px;flex:none;line-height:1.4}
+.hist .tx{font-size:12.5px;line-height:1.5;color:var(--bad)}
+.hist .tx b{font-weight:600}
+.resolved{background:var(--goodbg);border:1px solid var(--goodbd);border-radius:11px;padding:15px 17px;display:flex;flex-direction:column;gap:7px}
+.resolved .h{display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:600;color:var(--good)}
+.resolved .tx{font-size:13px;color:var(--n700);line-height:1.5}
+
+/* ---------- tables ---------- */
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--m);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--n500);text-align:left;padding:11px 14px;border-bottom:1px solid var(--n200);font-weight:500;white-space:nowrap;background:var(--surface)}
+td{padding:12px 14px;border-bottom:1px solid var(--n100);font-size:13.5px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+td .st{font-weight:600}
+td .sub{font-size:11.5px;color:var(--n500);margin-top:2px}
+tr.moved{background:var(--b50)}
+tr.moved td{border-color:var(--b100)}
+.movetag{font-family:var(--m);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--b600);margin-left:7px}
+
+/* ---------- rules ---------- */
+.rules{display:flex;flex-direction:column;gap:9px}
+.rule{border:1px solid var(--n200);border-radius:10px;padding:12px 14px;display:flex;gap:11px;align-items:flex-start;background:var(--surface)}
+.rule.fromloop{border-color:var(--b300);background:var(--b50)}
+.rule .ri{display:flex;flex-direction:column;gap:4px;min-width:0}
+.rule .rt{font-size:13.5px;font-weight:500;line-height:1.45}
+.rule .rs{font-size:12px;color:var(--n500);line-height:1.45}
+.rule .rs b{color:var(--b600);font-weight:600}
+
+/* ---------- traceback ---------- */
+.trace{display:flex;flex-direction:column;gap:0}
+.tnode{display:grid;grid-template-columns:118px 1fr;gap:14px;align-items:start;padding:11px 0}
+.tnode .tk{font-family:var(--m);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--n400);padding-top:3px}
+.tnode .tv{display:flex;flex-direction:column;gap:3px}
+.tnode .tt{font-size:14px;font-weight:600;font-family:var(--m)}
+.tnode .td{font-size:12.5px;color:var(--n500);line-height:1.45}
+.tarrow{margin-left:132px;color:var(--b400);font-size:13px;line-height:1}
+.cause{background:var(--n900);color:#fff;border-radius:11px;padding:16px 18px;display:flex;flex-direction:column;gap:7px}
+.cause .k{font-family:var(--m);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--b300)}
+.cause .t{font-size:16.5px;font-weight:600;letter-spacing:-.01em;line-height:1.35}
+.cause .d{font-size:13px;color:var(--n400);line-height:1.55}
+
+/* ---------- thresholds ---------- */
+.thr{display:flex;flex-direction:column;gap:0}
+.throw{display:grid;grid-template-columns:1fr 190px 150px;gap:16px;align-items:center;padding:15px 0;border-top:1px solid var(--n200)}
+.throw:first-child{border-top:none}
+@media(max-width:820px){.throw{grid-template-columns:1fr;gap:9px}}
+.throw .ti{display:flex;flex-direction:column;gap:3px}
+.throw .tt{font-size:14px;font-weight:500}
+.throw .td{font-size:12.5px;color:var(--n500);line-height:1.45}
+.throw .tval{font-family:var(--m);font-size:13px;background:var(--surface);border:1px solid var(--n200);border-radius:7px;padding:7px 11px;text-align:center}
+.seg{display:flex;background:var(--n100);border:1px solid var(--n200);border-radius:8px;padding:2px}
+.seg button{flex:1;padding:6px 8px;border-radius:6px;font-family:var(--m);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--n500);font-weight:500}
+.seg button.on{background:var(--n0);color:var(--n900);box-shadow:0 1px 2px rgba(0,0,0,.07)}
+.seg button.on.a{color:var(--b700)}
+.seg button.on.p{background:var(--n900);color:#fff}
+
+/* ---------- misc ---------- */
+.note{background:var(--n100);border:1px dashed var(--n300);border-radius:10px;padding:12px 15px;font-size:12.5px;color:var(--n600);line-height:1.5}
+.note b{font-family:var(--m);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--b600);margin-right:7px}
+.loopbanner{background:var(--b50);border:1px solid var(--b200);border-radius:11px;padding:13px 16px;display:flex;gap:11px;align-items:flex-start}
+.loopbanner .tx{font-size:13px;line-height:1.55;color:var(--b900)}
+.loopbanner .tx b{font-weight:600}
+.inc{background:var(--badbg);border:1px solid var(--badbd);border-radius:11px;padding:14px 17px;display:flex;gap:12px;align-items:flex-start}
+.inc .tx{font-size:13.5px;line-height:1.55;color:var(--n800)}
+.inc .tx b{font-weight:600;color:var(--bad)}
+.foot{font-size:12px;color:var(--n400);padding:6px 0 20px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+/* ============================================================
+   UnifyApps · Manufacturing — clickable prototype
+   One incident, one dataset, three agent views.
+   ALL DATA IS ILLUSTRATIVE. Nothing here is Shaw data.
+   ============================================================ */
+
+const D = {
+  style:"Cascade Twist", colour:"Dune 240",
+  dyelot:"DL-4471", batch:"B-88214", yarnlot:"Y-30918", roll:"R-11204",
+  line:"Backing 2", claim:"CLM-2291",
+  planRate:420, actualRate:370,
+  orders:[
+    {id:"ORD-77310", dealer:"Kestrel Flooring", city:"Atlanta GA", qty:1150, promised:"18 Aug", fixed:true},
+    {id:"ORD-77412", dealer:"Brightwater Interiors", city:"Nashville TN", qty:900, promised:"21 Aug", fixed:false}
+  ],
+  hours:["04:00","05:00","06:00","07:00","08:00","09:00","10:00","11:00","12:00"],
+  plan:[420,420,420,420,420,420,420,420,420],
+  actual:[418,422,416,388,372,368,371,366,369]
+};
+
+const SEQ_BASE = [
+  {slot:"1", line:"Tufting 3",  style:"Cascade Twist", colour:"Pearl 118", dyelot:"DL-4468", qty:1400, chg:0,    status:"running", order:"ORD-77208"},
+  {slot:"2", line:"Backing 2",  style:"Cascade Twist", colour:"Dune 240",  dyelot:"DL-4471", qty:2050, chg:640,  status:"running", order:"ORD-77310"},
+  {slot:"3", line:"Backing 2",  style:"Cascade Twist", colour:"Dune 240",  dyelot:"DL-4471", qty:900,  chg:0,    status:"queued",  order:"ORD-77412"},
+  {slot:"4", line:"Backing 2",  style:"Harbour Loop",  colour:"Slate 402", dyelot:"DL-4480", qty:1600, chg:1840, status:"queued",  order:"ORD-77455"},
+  {slot:"5", line:"Finishing 1",style:"Cascade Twist", colour:"Dune 240",  dyelot:"DL-4471", qty:2950, chg:0,    status:"queued",  order:"—"}
+];
+
+const RULES_BASE = [
+  {t:"Group runs of the same colour family into one campaign", s:"Soft constraint · reduces changeovers, costed per candidate sequence", loop:false},
+  {t:"Sequence light to dark within a colour family", s:"Dark to light requires a full purge — 3h 20m", loop:false},
+  {t:"Respect booked PM windows on Backing 2", s:"Tue 22:00–02:00, from your maintenance system", loop:false},
+  {t:"Plan against achieved rates, not standard rates", s:"Backing 2 achieving 412 yd/hr against a 420 standard", loop:false}
+];
+
+const FEED_BASE = [
+  {ts:"06:38", lane:"auto",   by:"Rowan", tx:"Rate on <b>Backing 2</b> fell below the alert band. Deviation opened."},
+  {ts:"06:39", lane:"auto",   by:"Rowan", tx:"Joined the deviation to the released sequence. Projected finish moved <b>+5h 10m</b>."},
+  {ts:"06:39", lane:"auto",   by:"Rowan", tx:"Identified <b>2 orders</b> at risk — ORD-77310 (fixed install) and ORD-77412."},
+  {ts:"06:40", lane:"auto",   by:"Rowan", tx:"Re-sequenced <b>4 runs on Finishing 1</b> to absorb the slip. No promised date affected."},
+  {ts:"06:40", lane:"auto",   by:"Rowan", tx:"Line and plant manager notified. Three options costed and ranked."},
+  {ts:"06:41", lane:"limit",  by:"Rowan", tx:"Stopped short of re-sequencing <b>Backing 2</b> — every option there moves a promised date."},
+  {ts:"06:41", lane:"person", by:"Rowan", tx:"Escalated: <b>the dye lot or the date.</b> Waiting on a decision."}
+];
+
+const OPTIONS = [
+  {
+    id:"A", name:"Re-sequence — run DL-4471 whole", rec:true,
+    d:"Pull ORD-77412 forward and run the full dye lot in one pass. ORD-77412 slips one day; it has no fixed install date.",
+    cost:1840, dateRisk:"ORD-77412 +1 day", lotRisk:"None — lot stays whole",
+    seqEffect:"reorder"
+  },
+  {
+    id:"B", name:"Split DL-4471 across two dye runs", risky:true,
+    d:"Hit both promised dates by splitting the lot. Two dye runs will not shade-match.",
+    cost:0, dateRisk:"None", lotRisk:"Shade variation on ORD-77310",
+    hist:"You did this on <b>DL-4102 in June</b>. It produced claim CLM-2291 — the claim Wren is still tracing. Same style, same fixed-install exposure.",
+    seqEffect:"split"
+  },
+  {
+    id:"C", name:"Expedite — Saturday overtime on Backing 2",
+    d:"Both dates held and the lot stays whole. Costs a shift of premium time and eats the PM window.",
+    cost:6200, dateRisk:"None", lotRisk:"None — lot stays whole",
+    seqEffect:"expedite"
+  }
+];
+
+const INSPECT = [
+  {roll:"R-11204", batch:"B-88214", dyelot:"DL-4471", grade:"Second", conf:"Shade variation vs spec", lane:"person", note:"Borderline — second occurrence"},
+  {roll:"R-11203", batch:"B-88214", dyelot:"DL-4471", grade:"First",  conf:"Within spec on all measures", lane:"auto",   note:"Graded automatically"},
+  {roll:"R-11202", batch:"B-88214", dyelot:"DL-4471", grade:"First",  conf:"Within spec on all measures", lane:"auto",   note:"Graded automatically"},
+  {roll:"R-11198", batch:"B-88209", dyelot:"DL-4102", grade:"Second", conf:"Shade variation vs spec", lane:"settled", note:"Graded 2 Jul · linked to claim CLM-2291"}
+];
+
+const THRESHOLDS = [
+  {t:"Re-sequence runs within the current day", d:"No promised date affected", val:"Allowed", mode:"auto", agent:"Rowan"},
+  {t:"Re-sequence where a promised date moves", d:"Any customer commitment", val:"Always ask", mode:"person", agent:"Rowan"},
+  {t:"Deviation alert band", d:"Drift inside the band is logged, not raised", val:"± 8% of plan rate", mode:"limit", agent:"Rowan"},
+  {t:"Split a dye lot", d:"Where an order has a fixed install date", val:"Never", mode:"person", agent:"Sawyer"},
+  {t:"Publish a schedule change inside the locked window", d:"Locked window is 48h", val:"Always ask", mode:"person", agent:"Sawyer"},
+  {t:"Grade a clear pass", d:"Within spec on every measure", val:"Allowed", mode:"auto", agent:"Wren"},
+  {t:"Grade a borderline roll, or a repeat fault", d:"Second occurrence of the same fault", val:"Always ask", mode:"person", agent:"Wren"},
+  {t:"Raise a defect pattern as a process change", d:"Pattern across three or more batches", val:"Allowed", mode:"auto", agent:"Wren"}
+];
+
+/* ---------- state ---------- */
+let S = {
+  view:"rowan",
+  decision:null,           // null | option id
+  seq:JSON.parse(JSON.stringify(SEQ_BASE)),
+  rules:JSON.parse(JSON.stringify(RULES_BASE)),
+  feed:JSON.parse(JSON.stringify(FEED_BASE)),
+  findingSent:false,
+  gradeDone:false,
+  thr:THRESHOLDS.map(t=>t.mode),
+  fresh:new Set()
+};
+
+const AG = {
+  sawyer:{n:"Sawyer", r:"Scheduling",  i:"S"},
+  rowan: {n:"Rowan",  r:"Make",        i:"R"},
+  wren:  {n:"Wren",   r:"Quality",     i:"W"}
+};
+const LANE = {
+  auto:  {k:"Automated",     cls:"auto"},
+  limit: {k:"Inside limits", cls:"limit"},
+  person:{k:"Needs you",     cls:"person"}
+};
+
+function needsCount(){
+  let n=0;
+  if(!S.decision) n++;
+  if(!S.gradeDone) n++;
+  return n;
+}
+function chip(lane,label){
+  const l=LANE[lane];
+  const cls = l ? l.cls : lane;              // mute / bad / good pass straight through
+  const txt = label || (l ? l.k : lane);
+  return `<span class="chip ${cls}"><span class="d"></span>${txt}</span>`;
+}
+function money(n){return "$"+n.toLocaleString("en-US");}
+
+/* ============================ chart ============================ */
+function rateChart(){
+  const W=560,H=160,PL=38,PR=52,PT=14,PB=24;
+  const iw=W-PL-PR, ih=H-PT-PB;
+  const lo=340, hi=440;
+  const x=i=>PL+(i/(D.hours.length-1))*iw;
+  const y=v=>PT+ih-((v-lo)/(hi-lo))*ih;
+  const path=a=>a.map((v,i)=>`${i?"L":"M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  // deficit wash between plan and actual, from the point the deviation opens
+  const start=3;
+  const wash=[]
+    .concat(D.plan.slice(start).map((v,i)=>`${i?"L":"M"}${x(start+i).toFixed(1)},${y(v).toFixed(1)}`))
+    .concat(D.actual.slice(start).map((v,i,a)=>`L${x(D.actual.length-1-i).toFixed(1)},${y(D.actual[D.actual.length-1-i]).toFixed(1)}`))
+    .join(" ")+" Z";
+  const ticks=[340,370,400,430];
+  return `
+  <div class="clegend">
+    <div class="i"><span class="k" style="background:#71717b"></span>Plan rate</div>
+    <div class="i"><span class="k" style="background:#18181b"></span>Achieved rate</div>
+    <div class="i"><span class="k" style="background:#b42318;height:8px;border-radius:2px;opacity:.14"></span>Shortfall</div>
+  </div>
+  <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Achieved rate against plan rate on Backing 2, 04:00 to 12:00. Achieved rate falls 12 percent below plan from 07:00.">
+    ${ticks.map(t=>`<line x1="${PL}" x2="${PL+iw}" y1="${y(t)}" y2="${y(t)}" stroke="#e4e4e7" stroke-width="1"/>
+      <text class="ax" x="${PL-8}" y="${y(t)+3.5}" text-anchor="end">${t}</text>`).join("")}
+    <path d="${wash}" fill="#b42318" opacity="0.1"/>
+    <path d="${path(D.plan)}" fill="none" stroke="#71717b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${path(D.actual)}" fill="none" stroke="#18181b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${x(D.actual.length-1)}" cy="${y(D.actual[D.actual.length-1])}" r="4.5" fill="#18181b" stroke="${'#fcfcfb'}" stroke-width="2"/>
+    <circle cx="${x(D.plan.length-1)}" cy="${y(D.plan[D.plan.length-1])}" r="4.5" fill="#71717b" stroke="${'#fcfcfb'}" stroke-width="2"/>
+    <text class="dlabel" x="${x(D.actual.length-1)+9}" y="${y(D.actual[D.actual.length-1])+4}">369</text>
+    <text class="dlabel" x="${x(D.plan.length-1)+9}" y="${y(D.plan[D.plan.length-1])+4}" fill="#71717b">420</text>
+    ${D.hours.map((h,i)=>i%2===0?`<text class="ax" x="${x(i)}" y="${H-6}" text-anchor="middle">${h}</text>`:"").join("")}
+    <line x1="${x(3)}" x2="${x(3)}" y1="${PT}" y2="${PT+ih}" stroke="#b42318" stroke-width="1" opacity=".45"/>
+    <text class="ax" x="${x(3)+5}" y="${PT+9}" fill="#b42318">deviation opened 06:38</text>
+  </svg>`;
+}
+
+/* ============================ views ============================ */
+
+function vRowan(){
+  const resolved = S.decision;
+  const opt = resolved ? OPTIONS.find(o=>o.id===resolved) : null;
+  return `
+  <div class="phead">
+    <div class="eye">Rowan · Make — exception engine</div>
+    <h1>Live run · ${D.line}</h1>
+    <div class="sub">Your MES runs the make. Rowan reads it continuously and holds the released plan against what is actually happening.</div>
+  </div>
+
+  <div class="inc">
+    <div class="tx"><b>Deviation open since 06:38.</b> ${D.line} is running 12% under plan rate on ${D.style} · ${D.colour}, dye lot ${D.dyelot}. Batch ${D.batch} went on quality hold in the same hour, and the lot behind it is already committed to two orders.</div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="t">Projected finish</div><div class="s">against the released sequence</div><div class="r">Continuous</div></div>
+    <div class="hero">
+      <div class="v">+5h 10m</div>
+      <div class="hmeta">
+        <div class="l">Later than the released plan</div>
+        <div class="dl bad">↑ from +40m at 06:38 — still opening</div>
+      </div>
+    </div>
+    <div class="tiles" style="margin-top:18px">
+      <div class="tile alert">
+        <div class="l">Achieved rate</div>
+        <div class="v">369 <span style="font-size:14px;font-weight:500;color:var(--n500)">yd/hr</span></div>
+        <div class="d bad">▼ 12% vs plan · outside the ±8% band</div>
+      </div>
+      <div class="tile">
+        <div class="l">Output this shift</div>
+        <div class="v">2,940</div>
+        <div class="d">of 3,360 planned</div>
+      </div>
+      <div class="tile">
+        <div class="l">Unplanned downtime</div>
+        <div class="v">48m</div>
+        <div class="d">2 stops · reason code pending</div>
+      </div>
+      <div class="tile">
+        <div class="l">Yield</div>
+        <div class="v">96.2%</div>
+        <div class="d good">▲ 0.4pt vs last shift</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2 wide">
+    <div class="card">
+      <div class="ch"><div class="t">Rate against plan</div><div class="s">${D.line} · this shift</div></div>
+      <div class="chartwrap">${rateChart()}</div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="t">Genealogy</div><div class="s">recorded as the run happens</div></div>
+      <div class="trace">
+        <div class="tnode"><div class="tk">Yarn lot</div><div class="tv"><div class="tt">${D.yarnlot}</div><div class="td">Solution-dyed BCF · ${D.colour}</div></div></div>
+        <div class="tarrow">↓</div>
+        <div class="tnode"><div class="tk">Dye lot</div><div class="tv"><div class="tt">${D.dyelot}</div><div class="td">2,950 lin yd committed across 2 orders</div></div></div>
+        <div class="tarrow">↓</div>
+        <div class="tnode"><div class="tk">Batch</div><div class="tv"><div class="tt">${D.batch}</div><div class="td">On quality hold since 06:52</div></div></div>
+        <div class="tarrow">↓</div>
+        <div class="tnode"><div class="tk">Roll</div><div class="tv"><div class="tt">${D.roll}</div><div class="td">At end-of-line inspection — with Wren</div></div></div>
+      </div>
+      <div class="note" style="margin-top:14px"><b>Why it matters</b>This record is written as the run happens. It is what makes a claim settleable instead of arguable.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="t">Activity</div><div class="s">what the agent did, and what it left for you</div></div>
+    <div class="feed">
+      ${S.feed.map((f,i)=>`
+      <div class="fitem ${S.fresh.has(f.ts+f.tx)?"new":""}">
+        <div class="ts">${f.ts}</div>
+        <div class="co">
+          <div class="hd">${chip(f.lane)}<span class="by">${f.by}</span></div>
+          <div class="tx">${f.tx}</div>
+        </div>
+      </div>`).join("")}
+    </div>
+  </div>
+
+  ${resolved ? `
+  <div class="resolved">
+    <div class="h">✓ Decision recorded — option ${opt.id}: ${opt.name}</div>
+    <div class="tx">Sawyer has re-planned and the sequence is updated. ${opt.id==="A"?`ORD-77412 pulled forward, ${D.dyelot} stays whole, ${money(opt.cost)} changeover accepted.`:opt.id==="B"?`${D.dyelot} split across two dye runs. Both dates held, shade-variation risk accepted on ORD-77310.`:`Saturday overtime booked on ${D.line}. Both dates held, lot stays whole, ${money(opt.cost)} premium time.`} The decision and its reasoning are logged against the batch.</div>
+    <div style="display:flex;gap:9px;margin-top:6px">
+      <button class="btn sm" data-act="goto" data-v="sawyer">See it in Sawyer's sequence →</button>
+      <button class="btn sm" data-act="undo">Undo</button>
+    </div>
+  </div>` : `
+  <div class="decision">
+    <div class="dtop">
+      ${chip("person")}
+      <div class="t">One decision is waiting on you</div>
+      <div class="s">Rowan has worked out the options. The call is yours.</div>
+    </div>
+    <div class="dbody">
+      <div class="dq">The dye lot, or the date?</div>
+      <div class="opts">
+        ${OPTIONS.map(o=>`
+        <div class="opt ${o.rec?"rec":""} ${o.risky?"risky":""}">
+          <div class="oi">
+            <div class="on">
+              <span class="ot">Option ${o.id} · ${o.name}</span>
+              ${o.rec?`<span class="chip auto"><span class="d"></span>Rowan's recommendation</span>`:""}
+              ${o.risky?`<span class="chip bad"><span class="d"></span>Repeat of a known cause</span>`:""}
+            </div>
+            <div class="od">${o.d}</div>
+            <div class="ometa">
+              <div><div class="mk">Cost</div><div class="mv">${o.cost?money(o.cost):"—"}</div></div>
+              <div><div class="mk">Date risk</div><div class="mv" style="font-weight:500">${o.dateRisk}</div></div>
+              <div><div class="mk">Lot risk</div><div class="mv" style="font-weight:500">${o.lotRisk}</div></div>
+            </div>
+            ${o.hist?`<div class="hist"><div class="ic">⚠</div><div class="tx">${o.hist}</div></div>`:""}
+          </div>
+          <div class="oc">
+            <button class="btn ${o.rec?"pri":""}" data-act="accept" data-o="${o.id}">Accept</button>
+          </div>
+        </div>`).join("")}
+      </div>
+      <div class="note"><b>What Rowan already did</b>Re-sequenced 4 runs on Finishing 1 without asking — no promised date moved, so it was inside your limits. Everything on ${D.line} moves a customer date, so it stopped.</div>
+    </div>
+  </div>`}`;
+}
+
+function vSawyer(){
+  const changed = S.decision;
+  return `
+  <div class="phead">
+    <div class="eye">Sawyer · Scheduling</div>
+    <h1>Released sequence · week of 11 Aug</h1>
+    <div class="sub">Builds a plan the plant can actually hold, and releases it in a runnable order. Demand arrives from the system you already run — Sawyer consumes the signal, it does not produce it.</div>
+  </div>
+
+  ${changed?`<div class="loopbanner">
+    <div class="tx"><b>The plan corrected itself.</b> Rowan's deviation on ${D.line} came back into scheduling at 06:41 and the sequence below was rebuilt against it — 2 minutes ago, without a planning cycle.</div>
+  </div>`:`<div class="note"><b>Try this</b>Go to Rowan, accept a recommendation, and come back. The sequence below rebuilds itself — that is the loop.</div>`}
+
+  <div class="card">
+    <div class="ch"><div class="t">Schedule adherence</div><div class="s">week to date</div></div>
+    <div class="hero">
+      <div class="v">62%</div>
+      <div class="hmeta">
+        <div class="l">Made in the planned sequence, on the planned day</div>
+        <div class="dl">Attainment for the same week: <b>97%</b></div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:16px"><b>The distinction</b>You can hit 97% attainment and 62% adherence by making everything you said you would, in the wrong order, and catching up on Friday. The volume number looks fine while the customer promise is destroyed.</div>
+  </div>
+
+  <div class="card flat">
+    <div style="padding:18px 20px 0"><div class="ch"><div class="t">Released sequence · ${D.line} and downstream</div><div class="s">finite capacity, real rates</div></div></div>
+    <table>
+      <thead><tr><th>Slot</th><th>Line</th><th>Style · colour</th><th>Dye lot</th><th>Qty</th><th>Changeover</th><th>Order</th><th>Status</th></tr></thead>
+      <tbody>
+        ${S.seq.map(r=>`
+        <tr class="${r.moved?"moved":""}">
+          <td class="num"><span class="st">${r.slot}</span></td>
+          <td>${r.line}</td>
+          <td><div class="st">${r.style}</div><div class="sub">${r.colour}</div></td>
+          <td class="num">${r.dyelot}${r.split?`<div class="sub" style="color:var(--bad)">split — 2 dye runs</div>`:""}</td>
+          <td class="num">${r.qty.toLocaleString("en-US")}</td>
+          <td class="num">${r.chg?money(r.chg):"—"}</td>
+          <td class="num">${r.order}</td>
+          <td>${r.status==="running"?chip("auto","Running"):chip("mute","Queued")}${r.moved?`<span class="movetag">moved by Rowan</span>`:""}</td>
+        </tr>`).join("")}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="ch"><div class="t">Constraint &amp; readiness model</div><div class="s">what the sequence is built against</div></div>
+      <div class="rules">
+        ${S.rules.map(r=>`
+        <div class="rule ${r.loop?"fromloop":""}">
+          ${r.loop?chip("auto","From Wren"):chip("mute","Rule")}
+          <div class="ri"><div class="rt">${r.t}</div><div class="rs">${r.s}</div></div>
+        </div>`).join("")}
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="t">Achieved rate against standard</div><div class="s">what the plant can really do</div></div>
+      ${[
+        {l:"Tufting 3",  std:520, act:511},
+        {l:"Backing 2",  std:420, act:369, bad:true},
+        {l:"Finishing 1",std:610, act:598}
+      ].map(x=>`
+        <div style="padding:11px 0;border-top:1px solid var(--n100)">
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+            <div style="font-size:13.5px;font-weight:500">${x.l}</div>
+            <div style="margin-left:auto;font-family:var(--m);font-size:12.5px;font-variant-numeric:tabular-nums">${x.act} / ${x.std} <span style="color:var(--n400)">yd/hr</span></div>
+          </div>
+          <div class="meter ${x.bad?"warnm":""}"><div class="f" style="width:${Math.round(x.act/x.std*100)}%"></div></div>
+          ${x.bad?`<div style="font-size:11.5px;color:var(--bad);margin-top:5px;font-weight:500">Constraint line · 12% under standard</div>`:""}
+        </div>`).join("")}
+      <div class="note" style="margin-top:14px"><b>Illustrative</b>Which line is the real constraint is an open question for Shaw — ask "if one machine stops, which one costs you the day?"</div>
+    </div>
+  </div>`;
+}
+
+function vWren(){
+  return `
+  <div class="phead">
+    <div class="eye">Wren · Quality</div>
+    <h1>End of line, and the loop back</h1>
+    <div class="sub">Grades at end of line, traces a claim back to its batch, and sends the cause upstream. Off-quality carpet is not scrapped — it is downgraded and sold as seconds, so the loss is the margin gap.</div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="t">Margin at risk</div><div class="s">seconds this month, against first-quality price</div></div>
+    <div class="hero">
+      <div class="v">$41,200</div>
+      <div class="hmeta">
+        <div class="l">Margin gap on downgraded stock</div>
+        <div class="dl bad">Of which $18,400 traces to a sequence decision</div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:16px"><b>The argument</b>Nearly half of this was caused upstream — start-up waste after a changeover, shade variation from a split dye lot, contamination from a bad colour order. Those are scheduling decisions that arrive dressed as quality problems.</div>
+  </div>
+
+  <div class="card flat">
+    <div style="padding:18px 20px 0"><div class="ch"><div class="t">Inspection queue</div><div class="s">measured against spec, evidence filed</div></div></div>
+    <table>
+      <thead><tr><th>Roll</th><th>Batch</th><th>Dye lot</th><th>Proposed grade</th><th>Basis</th><th>Disposition</th></tr></thead>
+      <tbody>
+        ${INSPECT.map((r,i)=>`
+        <tr>
+          <td class="num"><span class="st">${r.roll}</span></td>
+          <td class="num">${r.batch}</td>
+          <td class="num">${r.dyelot}</td>
+          <td><span class="st">${r.grade}</span></td>
+          <td><div style="font-size:13px;color:var(--n600)">${r.conf}</div><div class="sub">${r.note}</div></td>
+          <td>${
+            r.lane==="auto"    ? chip("auto","Graded")
+            : r.lane==="settled" ? chip("mute","Settled")
+            : (i===0 && !S.gradeDone) ? `<button class="btn sm pri" data-act="grade">Decide grade</button>`
+            : (i===0 && S.gradeDone)  ? chip("good","Confirmed second")
+            : chip("person","Needs you")
+          }</td>
+        </tr>`).join("")}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid2 wide">
+    <div class="card">
+      <div class="ch"><div class="t">Claim ${D.claim} · traceback</div><div class="s">pulled from records already held</div></div>
+      <div class="trace">
+        <div class="tnode"><div class="tk">Claim</div><div class="tv"><div class="tt">${D.claim}</div><div class="td">Kestrel Flooring · shade variation across a single install</div></div></div>
+        <div class="tarrow">↓</div>
+        <div class="tnode"><div class="tk">Rolls</div><div class="tv"><div class="tt">R-11198, R-11199</div><div class="td">Shipped 2 Jul against ORD-76981</div></div></div>
+        <div class="tarrow">↓</div>
+        <div class="tnode"><div class="tk">Batch</div><div class="tv"><div class="tt">B-88209</div><div class="td">Run on Backing 2, 27 Jun</div></div></div>
+        <div class="tarrow">↓</div>
+        <div class="tnode"><div class="tk">Dye lot</div><div class="tv"><div class="tt">DL-4102</div><div class="td">Split across two dye runs to hold a promised date</div></div></div>
+      </div>
+      <div class="cause" style="margin-top:16px">
+        <div class="k">Cause</div>
+        <div class="t">The lot was split to protect a date. The two dye runs did not shade-match.</div>
+        <div class="d">Time to trace: <b style="color:#fff">under a minute</b>, from records written when the roll was made. Nobody assembled evidence, and there is nothing to argue about.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="t">Pattern</div><div class="s">across batches</div></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${[
+          {c:"CLM-2291",l:"DL-4102",d:"Split lot · Jun"},
+          {c:"CLM-2205",l:"DL-3988",d:"Split lot · May"},
+          {c:"CLM-2154",l:"DL-3902",d:"Split lot · Apr"}
+        ].map(x=>`
+          <div class="rule"><div class="ri"><div class="rt">${x.c} · ${x.l}</div><div class="rs">${x.d}</div></div></div>`).join("")}
+      </div>
+      <div style="margin-top:14px;font-size:13.5px;line-height:1.55;color:var(--n700)">Three claims in four months, one cause, and it was a scheduling decision every time. That is a pattern, not a one-off — so it goes upstream as a process change.</div>
+      ${S.findingSent
+        ? `<div class="resolved" style="margin-top:14px">
+             <div class="h">✓ Sent to Sawyer</div>
+             <div class="tx">The constraint model now refuses to split a dye lot where an order has a fixed install date.</div>
+             <div><button class="btn sm" data-act="goto" data-v="sawyer">See it in the constraint model →</button></div>
+           </div>`
+        : `<div style="margin-top:14px;display:flex;flex-direction:column;gap:9px">
+             ${chip("auto","Wren can send this itself")}
+             <button class="btn pri" data-act="finding">Send the finding to Sawyer</button>
+             <div style="font-size:12px;color:var(--n500);line-height:1.45">A one-off Wren records and watches. A pattern across batches is raised as a process change — that threshold is one you set.</div>
+           </div>`}
+    </div>
+  </div>`;
+}
+
+function vThresholds(){
+  return `
+  <div class="phead">
+    <div class="eye">Setup</div>
+    <h1>Thresholds</h1>
+    <div class="sub">Autonomy is a dial you set, not a property of the software. Every line below is a limit the agents work inside — change one and the agents' behaviour changes with it.</div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="t">What the agents may do without asking</div><div class="s">grouped by agent</div></div>
+    <div class="thr">
+      ${THRESHOLDS.map((t,i)=>`
+      <div class="throw">
+        <div class="ti">
+          <div class="tt">${t.t} <span style="font-family:var(--m);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--b600);margin-left:6px">${t.agent}</span></div>
+          <div class="td">${t.d}</div>
+        </div>
+        <div class="tval">${t.val}</div>
+        <div class="seg">
+          <button class="${S.thr[i]==="auto"?"on a":""}" data-act="thr" data-i="${i}" data-m="auto">Auto</button>
+          <button class="${S.thr[i]==="limit"?"on":""}" data-act="thr" data-i="${i}" data-m="limit">Limit</button>
+          <button class="${S.thr[i]==="person"?"on p":""}" data-act="thr" data-i="${i}" data-m="person">Ask</button>
+        </div>
+      </div>`).join("")}
+    </div>
+    <div class="note" style="margin-top:16px"><b>The point</b>Nothing here is a capability question. It is a governance question — and it is answered by the customer, not by us.</div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="ch"><div class="t">What the agents never do</div></div>
+      <div class="rules">
+        ${["Run the line","Write the demand plan","Grade the product","Overrule a quality hold"].map(x=>`
+        <div class="rule">${chip("person","Never")}<div class="ri"><div class="rt">${x}</div></div></div>`).join("")}
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="t">Sits on top of what you already run</div></div>
+      <div class="rules">
+        ${["Your demand planning","Your scheduling system","Your MES and batch management","Your maintenance system","Oracle Fusion · Databricks"].map(x=>`
+        <div class="rule">${chip("mute","Reads")}<div class="ri"><div class="rt">${x}</div></div></div>`).join("")}
+      </div>
+      <div class="note" style="margin-top:14px"><b>Note</b>They read across these and write decisions back. They hold no data of their own.</div>
+    </div>
+  </div>`;
+}
+
+/* ============================ shell ============================ */
+function render(){
+  const n = needsCount();
+  const views = {rowan:vRowan, sawyer:vSawyer, wren:vWren, thresholds:vThresholds};
+  const titles = {rowan:"Rowan · Make", sawyer:"Sawyer · Scheduling", wren:"Wren · Quality", thresholds:"Thresholds"};
+  document.getElementById("app").innerHTML = `
+    <aside class="side">
+      <div class="brand"><div class="k">UnifyApps</div><div class="t">Manufacturing</div></div>
+      <div class="navgrp">
+        <div class="lbl">Agents</div>
+        ${["sawyer","rowan","wren"].map(k=>{
+          const a=AG[k];
+          const b = k==="rowan" && !S.decision ? 1 : k==="wren" && !S.gradeDone ? 1 : 0;
+          return `<button class="nav ${S.view===k?"on":""}" data-act="goto" data-v="${k}">
+            <span class="ag">${a.i}</span>
+            <span class="meta"><span class="n">${a.n}</span><span class="r">${a.r}</span></span>
+            ${b?`<span class="badge">${b}</span>`:""}
+          </button>`;}).join("")}
+      </div>
+      <div class="navgrp">
+        <div class="lbl">Setup</div>
+        <button class="nav ${S.view==="thresholds"?"on":""}" data-act="goto" data-v="thresholds">
+          <span class="ico">⚙</span><span class="meta"><span class="n">Thresholds</span><span class="r">Autonomy limits</span></span>
+        </button>
+      </div>
+      <div class="legend">
+        <div class="lh">How to read this</div>
+        <div class="lgrow"><span class="sw" style="background:var(--b500)"></span><span class="tx"><b>Automated</b>The agent just does it.</span></div>
+        <div class="lgrow"><span class="sw" style="background:var(--warn)"></span><span class="tx"><b>Inside limits</b>Acts inside limits you set. Outside them it stops and asks.</span></div>
+        <div class="lgrow"><span class="sw" style="background:var(--n900);outline:1px solid var(--n600)"></span><span class="tx"><b>Needs you</b>Judgement. The agent prepares it — the call is yours.</span></div>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="top">
+        <div class="crumb">Carpet · <b>${titles[S.view]}</b></div>
+        <span class="demoflag">Illustrative data</span>
+        <div class="spacer"></div>
+        ${n?`<div class="needs">Decisions waiting<span class="c">${n}</span></div>`
+            :`<div class="needs clear">✓ Nothing waiting on you</div>`}
+      </div>
+      <div class="body">
+        ${views[S.view]()}
+        <div class="foot">Prototype · UnifyApps manufacturing agents for Shaw Industries · Navanta Labs. All names, lots, batches, orders and figures on these screens are illustrative and are not Shaw data.</div>
+      </div>
+    </main>`;
+  S.fresh.clear();
+}
+
+/* ---------- the loop ---------- */
+function accept(id){
+  const o = OPTIONS.find(x=>x.id===id);
+  S.decision = id;
+  S.seq = JSON.parse(JSON.stringify(SEQ_BASE));
+  if(o.seqEffect==="reorder"){
+    const a=S.seq;
+    const t=a[2]; a[2]=a[1]; a[1]=t;
+    a[1].slot="2"; a[2].slot="3";
+    a[1].moved=true; a[2].moved=true;
+    a[1].status="running"; a[2].status="queued";
+    a[3].chg=1840;
+  } else if(o.seqEffect==="split"){
+    S.seq[1].split=true; S.seq[2].split=true;
+    S.seq[1].moved=true; S.seq[2].moved=true;
+  } else {
+    S.seq[3].moved=true; S.seq[3].chg=6200;
+    S.seq.push({slot:"6",line:"Backing 2",style:"—",colour:"Overtime shift",dyelot:"—",qty:0,chg:6200,status:"queued",order:"—",moved:true});
+  }
+  const add = [
+    {ts:"06:44", lane:"person", by:"You",   tx:`Decision recorded — <b>option ${o.id}</b>: ${o.name}.`},
+    {ts:"06:44", lane:"auto",   by:"Rowan", tx:`Told Sawyer to re-plan. Reasoning logged against batch <b>${D.batch}</b>.`},
+    {ts:"06:45", lane:"auto",   by:"Sawyer",tx:`Sequence rebuilt and re-released to the floor. <b>${o.dateRisk==="None"?"No promised date moved":o.dateRisk}</b>.`}
+  ];
+  add.forEach(a=>S.fresh.add(a.ts+a.tx));
+  S.feed = FEED_BASE.concat(add);
+  render();
+}
+function undo(){
+  S.decision=null;
+  S.seq=JSON.parse(JSON.stringify(SEQ_BASE));
+  S.feed=JSON.parse(JSON.stringify(FEED_BASE));
+  render();
+}
+function sendFinding(){
+  S.findingSent=true;
+  if(!S.rules.some(r=>r.loop)){
+    S.rules.unshift({
+      t:"Never split a dye lot where an order has a fixed install date",
+      s:"Raised by <b>Wren</b> from a pattern across 3 batches · CLM-2291, CLM-2205, CLM-2154",
+      loop:true
+    });
+  }
+  render();
+}
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-act]");
+  if(!t)return;
+  const a=t.dataset.act;
+  if(a==="goto"){S.view=t.dataset.v;window.scrollTo(0,0);render();}
+  else if(a==="accept"){accept(t.dataset.o);}
+  else if(a==="undo"){undo();}
+  else if(a==="finding"){sendFinding();}
+  else if(a==="grade"){S.gradeDone=true;render();}
+  else if(a==="thr"){S.thr[+t.dataset.i]=t.dataset.m;render();}
+});
+
+render();
+</script>
+</body>
+</html>

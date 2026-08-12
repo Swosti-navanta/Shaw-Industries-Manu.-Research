@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UnifyApps · Manufacturing agents — demo</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --font-sans:'Geist','Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --font-mono:'Geist Mono','SF Mono',ui-monospace,'Roboto Mono',Menlo,monospace;
+    --brand-50:#f7f2ff;--brand-100:#f1e6ff;--brand-200:#decdff;--brand-300:#c8abff;--brand-400:#ab83fb;--brand-500:#8c5de1;--brand-600:#6a3ebd;--brand-700:#492a7e;--brand-900:#3a2263;
+    --n0:#fff;--n50:#fafafa;--n100:#f4f4f5;--n200:#e4e4e7;--n300:#d4d4d8;--n400:#a1a1ab;--n500:#71717b;--n600:#52525c;--n700:#3f3f47;--n800:#27272a;--n900:#18181b;
+    --lane-auto-bg:#f7f2ff;--lane-auto-ink:#492a7e;--lane-auto-bd:#decdff;
+    --lane-limit-bg:#fffbea;--lane-limit-ink:#9e3900;--lane-limit-bd:#fcd34d;
+    --lane-person-bg:#18181b;--lane-person-ink:#fafafa;
+    --ok-bg:#ecfdf3;--ok-fg:#067647;--ok-bd:#a6f4c5;
+    --bad-bg:#fef3f2;--bad-fg:#b42318;--bad-bd:#fda29b;
+    --info-bg:#f0f9ff;--info-fg:#005b89;
+    --shadow:0 1px 2px rgba(24,24,27,.07);
+  }
+  body{background:var(--n50);color:var(--n900);font-family:var(--font-sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .mono{font-family:var(--font-mono)}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--n300);border-radius:6px;border:2px solid var(--n50)}
+
+  .app{display:grid;grid-template-columns:224px 1fr;min-height:100vh}
+  .side{background:var(--n0);color:var(--n700);border-right:1px solid var(--n200);padding:18px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+  .brand{display:flex;align-items:center;gap:9px;padding:4px 8px 16px}
+  .brand .logo{width:22px;height:22px;border-radius:6px;background:var(--brand-500);display:grid;place-items:center;color:#fff;font-weight:600;font-size:13px}
+  .brand .bt{font-weight:600;font-size:14px;color:var(--n900)}
+  .brand .bs{font-size:10px;color:var(--n400);font-family:var(--font-mono);letter-spacing:.04em}
+  .navlabel{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--n400);padding:12px 8px 5px}
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:8px;color:var(--n600);font-size:13.5px}
+  .nav:hover{background:var(--n100);color:var(--n900)}
+  .nav.on{background:var(--brand-50);color:var(--brand-700);font-weight:500}
+  .nav .agent{font-family:var(--font-mono);font-size:9.5px;color:var(--n400)}
+  .nav.on .agent{color:var(--brand-600)}
+  .badge{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--bad-fg);color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center;font-family:var(--font-mono)}
+  .side .foot{margin-top:auto;font-size:10px;color:var(--n400);font-family:var(--font-mono);line-height:1.5;padding:8px}
+
+  .main{min-width:0;display:flex;flex-direction:column}
+  .head{position:sticky;top:0;z-index:5;background:rgba(250,250,250,.85);backdrop-filter:blur(6px);border-bottom:1px solid var(--n200);padding:12px 26px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .plantsel{display:flex;align-items:center;gap:8px}
+  .plantsel select{font-family:var(--font-mono);font-size:12.5px;color:var(--n900);background:var(--n0);border:1px solid var(--n300);border-radius:8px;padding:6px 10px}
+  .plantsel .pl{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--n400)}
+  .head-right{display:flex;align-items:center;gap:12px}
+  .counter{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--n600)}
+  .counter .n{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--bad-fg);color:#fff;font-weight:600;display:grid;place-items:center;font-family:var(--font-mono);font-size:11px}
+  .counter.clear .n{background:var(--ok-fg)}
+  .askbtn{display:flex;align-items:center;gap:7px;background:var(--brand-500);color:#fff;font-size:13px;font-weight:500;padding:7px 13px;border-radius:8px}
+  .askbtn:hover{background:var(--brand-600)}
+  .askbtn .q{font-family:var(--font-mono);font-weight:600}
+
+  .wrap{padding:24px 26px 60px;max-width:1180px}
+  .page-h{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:4px}
+  .page-t{font-size:22px;font-weight:600;letter-spacing:-.01em}
+  .page-s{font-size:13px;color:var(--n600);margin-bottom:18px}
+  .ey{font-family:var(--font-mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--n400)}
+  .illus{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.05em;color:var(--n400);border:1px solid var(--n200);border-radius:5px;padding:3px 7px}
+
+  .chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:5px;white-space:nowrap}
+  .chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.9}
+  .chip.auto{background:var(--lane-auto-bg);color:var(--lane-auto-ink)}
+  .chip.limit{background:var(--lane-limit-bg);color:var(--lane-limit-ink)}
+  .chip.person{background:var(--lane-person-bg);color:var(--lane-person-ink)}
+  .chip.bad{background:var(--bad-bg);color:var(--bad-fg)}
+  .chip.good{background:var(--ok-bg);color:var(--ok-fg)}
+  .chip.mute{background:var(--n100);color:var(--n600)}
+  .chip.nb::before{display:none}
+
+  .grid{display:grid;gap:14px}
+  .card{background:var(--n0);border:1px solid var(--n200);border-radius:14px;box-shadow:var(--shadow)}
+  .card.pad{padding:16px 18px}
+  .ch{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--n200)}
+  .ch .t{font-size:14px;font-weight:600}
+  .ch .s{font-size:12px;color:var(--n500)}
+  .k{cursor:pointer;transition:background .12s,border-color .12s}
+  .k:hover{background:var(--n50)}
+  .link{cursor:pointer;color:var(--brand-600);border-bottom:1px dashed var(--brand-300)}
+  .link:hover{color:var(--brand-700)}
+  .idlink{font-family:var(--font-mono);cursor:pointer;color:var(--n900);border-bottom:1px dotted var(--n400)}
+  .idlink:hover{color:var(--brand-600);border-color:var(--brand-400)}
+
+  .hero{display:flex;align-items:baseline;gap:14px;padding:6px 2px 2px}
+  .hero .fig{font-size:46px;font-weight:600;letter-spacing:-.02em;line-height:1;font-family:var(--font-mono)}
+  .hero .hm{font-size:12.5px;color:var(--n600)}
+  .hero .hm b{color:var(--n900)}
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .tile{background:var(--n0);border:1px solid var(--n200);border-radius:12px;padding:13px 14px;box-shadow:var(--shadow)}
+  .tile .tl{font-size:11px;color:var(--n500);display:flex;align-items:center;justify-content:space-between}
+  .tile .tv{font-size:22px;font-weight:600;font-family:var(--font-mono);margin-top:5px;letter-spacing:-.01em}
+  .tile .td{font-size:11px;margin-top:2px}
+  .tile.alert{border-color:var(--bad-bd);background:var(--bad-bg)}
+  .neg{color:var(--bad-fg)}.pos{color:var(--ok-fg)}
+
+  .exc{display:flex;align-items:center;gap:13px;padding:13px 16px;border-top:1px solid var(--n200)}
+  .exc:first-child{border-top:none}
+  .exc .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .exc .dot.red{background:var(--bad-fg)}.exc .dot.amber{background:var(--lane-limit-ink)}.exc .dot.purple{background:var(--brand-500)}
+  .exc .ex-t{font-weight:500;font-size:13.5px}
+  .exc .ex-s{font-size:12px;color:var(--n500)}
+  .exc .ex-r{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+  .reps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .rep{border:1px solid var(--n200);border-radius:10px;padding:11px 12px;background:var(--n0)}
+  .rep .rn{font-family:var(--font-mono);font-size:9.5px;color:var(--n400)}
+  .rep .rt{font-size:13px;font-weight:500;margin-top:3px}
+  .rep .rx{font-size:10.5px;color:var(--n500);margin-top:6px}
+
+  .feed{display:flex;flex-direction:column}
+  .fitem{display:grid;grid-template-columns:64px 92px 1fr;gap:12px;align-items:start;padding:11px 18px;border-top:1px solid var(--n200)}
+  .fitem:first-child{border-top:none}
+  .fitem .ft{font-family:var(--font-mono);font-size:11px;color:var(--n400)}
+  .fitem .fx{font-size:13px}
+  .fitem .fx b{font-weight:600}
+  .fitem .fa{font-family:var(--font-mono);font-size:10.5px;color:var(--n500)}
+  @keyframes slidein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .fresh{animation:slidein .35s ease}
+
+  .trace{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 0}
+  .tnode{border:1px solid var(--n200);border-radius:9px;padding:8px 11px;background:var(--n0);cursor:pointer}
+  .tnode:hover{border-color:var(--brand-400);background:var(--brand-50)}
+  .tnode .tk{font-family:var(--font-mono);font-size:9px;color:var(--n400);text-transform:uppercase;letter-spacing:.06em}
+  .tnode .tv{font-family:var(--font-mono);font-size:12.5px;font-weight:500;margin-top:1px}
+  .tarrow{color:var(--n300);font-size:14px}
+
+  .meter{height:7px;border-radius:4px;background:var(--n100);overflow:hidden;margin-top:6px}
+  .meter i{display:block;height:100%;background:var(--n900);border-radius:4px}
+  .meter.warn i{background:var(--lane-limit-ink)}
+  .machrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--n200)}
+  .machrow:first-child{border-top:none}
+
+  .dhead{background:var(--n900);color:var(--n100);border-radius:14px 14px 0 0;padding:14px 18px}
+  .dhead .dt{font-size:14px;font-weight:600}
+  .dhead .ds{font-size:12px;color:var(--n400);margin-top:2px}
+  .opt{padding:14px 18px;border-top:1px solid var(--n200);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start;cursor:pointer}
+  .opt:hover{background:var(--n50)}
+  .opt .ot{font-weight:600;font-size:13.5px}
+  .opt .od{font-size:12.5px;color:var(--n600);margin-top:3px}
+  .opt .cost{font-family:var(--font-mono);font-size:12.5px;text-align:right}
+  .opt .costl{font-size:10px;color:var(--n500);font-family:var(--font-mono)}
+  .hist{margin-top:9px;background:var(--bad-bg);border:1px solid var(--bad-bd);border-radius:9px;padding:9px 11px;font-size:12px;color:var(--n800)}
+  .hist b{color:var(--bad-fg)}
+  .accept{background:var(--brand-500);color:#fff;font-weight:500;font-size:12.5px;padding:8px 14px;border-radius:8px;align-self:center;white-space:nowrap}
+  .accept:hover{background:var(--brand-600)}
+  .resolved{margin:0 18px 16px;background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:12px;padding:14px 16px}
+  .resolved .rt{font-weight:600;color:var(--ok-fg);font-size:13.5px}
+  .resolved .rx{font-size:12.5px;color:var(--n700);margin-top:4px}
+  .btnrow{display:flex;gap:10px;margin-top:11px;flex-wrap:wrap}
+  .btn{font-size:12.5px;font-weight:500;padding:7px 13px;border-radius:8px;border:1px solid var(--n300);background:var(--n0)}
+  .btn:hover{background:var(--n100)}
+  .btn.brand{background:var(--brand-500);color:#fff;border-color:transparent}.btn.brand:hover{background:var(--brand-600)}
+  .note{border:1px dashed var(--n300);border-radius:10px;padding:11px 14px;font-size:12px;color:var(--n600);background:var(--n0)}
+  .note b{color:var(--n800)}
+
+  /* schedule board */
+  .board{background:var(--n0);border:1px solid var(--n200);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px}
+  .ruler{display:grid;grid-template-columns:118px 1fr;gap:12px;margin-bottom:6px}
+  .ticks{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;color:var(--n400);border-bottom:1px solid var(--n200);padding-bottom:5px}
+  .brow{display:grid;grid-template-columns:118px 1fr;gap:12px;align-items:center;padding:6px 0}
+  .brow .lname{font-size:12px;font-weight:500}
+  .brow .lname .lc{font-family:var(--font-mono);font-size:9px;color:var(--lane-limit-ink);display:block;margin-top:1px}
+  .track{position:relative;display:flex;gap:5px;height:48px;background:var(--n50);border:1px solid var(--n200);border-radius:9px;padding:5px;overflow:hidden}
+  .track.constraint{border-color:var(--lane-limit-bd);background:#fffdf6}
+  .lockwin{position:absolute;top:0;bottom:0;left:0;width:24%;background:repeating-linear-gradient(45deg,rgba(113,113,123,.05),rgba(113,113,123,.05) 5px,transparent 5px,transparent 10px);border-right:1px dashed var(--n300);pointer-events:none;z-index:0}
+  .run{position:relative;z-index:1;background:var(--n0);border:1px solid var(--n300);border-radius:7px;padding:5px 9px 5px 12px;display:flex;flex-direction:column;justify-content:center;cursor:pointer;min-width:0;overflow:hidden;transition:box-shadow .12s}
+  .run:hover{box-shadow:0 0 0 1px var(--brand-300)}
+  .run.sel{box-shadow:0 0 0 2px var(--brand-500)}
+  .run.dye{border-color:var(--lane-limit-bd)}
+  .run .rl{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .run .rm{font-family:var(--font-mono);font-size:9px;color:var(--n500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .run .acc{position:absolute;left:0;top:0;bottom:0;width:4px}
+  .run.moved .rl::after{content:' · moved';color:var(--brand-600);font-weight:500}
+  .co{align-self:center;font-family:var(--font-mono);font-size:9px;color:var(--n400);flex:0 0 auto;white-space:nowrap}
+  .bctl{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--n200)}
+  .bctl .sel-l{font-size:12.5px;color:var(--n600)}
+  .bctl .sel-l b{color:var(--n900)}
+  .verdict{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;border-radius:11px;padding:11px 14px;font-size:12.5px}
+  .verdict.good{background:var(--ok-bg);border:1px solid var(--ok-bd)}
+  .verdict.bad{background:var(--bad-bg);border:1px solid var(--bad-bd)}
+  .verdict .vt{font-weight:600}
+  .verdict .vmono{font-family:var(--font-mono);font-size:12px;white-space:nowrap}
+  .relchip{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:5px}
+  .relchip.rel{background:var(--ok-bg);color:var(--ok-fg)}
+  .relchip.draft{background:var(--lane-limit-bg);color:var(--lane-limit-ink)}
+
+  /* rules / constraint model */
+  .rule{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 18px;border-top:1px solid var(--n200)}
+  .rule:first-child{border-top:none}
+  .rule.fromloop{background:var(--brand-50)}
+  .rule .rt2{font-size:12.5px}
+  .rule .rt2 b{font-weight:600}
+
+  /* comparison cards (Sable) */
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .cmpc{border:1px solid var(--n200);border-radius:12px;padding:14px 16px}
+  .cmpc.rec{border-color:var(--ok-bd);background:var(--ok-bg)}
+  .cmpc.risk{border-color:var(--bad-bd);background:var(--bad-bg)}
+  .cmpc h4{font-size:13.5px;font-weight:600;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center}
+  .cmpc ul{list-style:none;font-size:12.5px;color:var(--n700);display:flex;flex-direction:column;gap:5px}
+  .cmpc li{padding-left:14px;position:relative}
+  .cmpc li::before{content:'–';position:absolute;left:0;color:var(--n400)}
+  .creel{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .creel .yb{border:1px solid var(--n200);border-radius:7px;padding:6px 10px;font-size:12px;background:var(--n0)}
+  .creel .yb .ya{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+  /* thresholds */
+  .throw{display:grid;grid-template-columns:1fr 216px;gap:16px;align-items:center;padding:13px 18px;border-top:1px solid var(--n200)}
+  .throw:first-child{border-top:none}
+  .throw .thl{font-size:13px;font-weight:500}
+  .throw .ths{font-size:11.5px;color:var(--n500);margin-top:2px}
+  .wired{font-family:var(--font-mono);font-size:8px;letter-spacing:.05em;text-transform:uppercase;color:var(--brand-700);background:var(--brand-50);border:1px solid var(--brand-200);border-radius:4px;padding:1px 5px;margin-left:7px;vertical-align:middle}
+  .seg{display:flex;border:1px solid var(--n300);border-radius:8px;overflow:hidden}
+  .seg button{flex:1;font-family:var(--font-mono);font-size:10px;letter-spacing:.03em;text-transform:uppercase;padding:7px 0;color:var(--n500)}
+  .seg button:hover{background:var(--n50)}
+  .seg button.on.a{background:var(--lane-auto-bg);color:var(--lane-auto-ink);font-weight:500}
+  .seg button.on.l{background:var(--lane-limit-bg);color:var(--lane-limit-ink);font-weight:500}
+  .seg button.on.k{background:var(--n900);color:#fff;font-weight:500}
+
+  .scrim{position:fixed;inset:0;background:rgba(24,24,27,.34);opacity:0;pointer-events:none;transition:opacity .18s;z-index:20}
+  .scrim.on{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;height:100vh;width:min(460px,94vw);background:var(--n0);box-shadow:-8px 0 30px rgba(24,24,27,.16);transform:translateX(100%);transition:transform .2s ease;z-index:21;display:flex;flex-direction:column}
+  .drawer.on{transform:none}
+  .dw-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--n200)}
+  .dw-head .dk{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--n400)}
+  .dw-head .dttl{font-size:17px;font-weight:600;margin-top:2px}
+  .x{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--n500);font-size:18px}
+  .x:hover{background:var(--n100)}
+  .dw-body{padding:18px 20px;overflow-y:auto}
+  .kv{display:grid;grid-template-columns:132px 1fr;gap:8px 12px;font-size:13px}
+  .kv dt{color:var(--n500)}.kv dd{color:var(--n900);font-weight:500}
+  .dw-sec{margin-top:18px}
+  .dw-sec .st{font-family:var(--font-mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--n400);margin-bottom:8px}
+  .spark{width:100%;height:64px}
+  /* drawer detail */
+  .dw-summary{border-radius:11px;padding:12px 14px;font-size:13px;line-height:1.5;margin-bottom:16px}
+  .dw-summary b{font-weight:600}
+  .dw-summary.bad{background:var(--bad-bg);border:1px solid var(--bad-bd);color:var(--n800)}
+  .dw-summary.warn{background:var(--lane-limit-bg);border:1px solid var(--lane-limit-bd);color:var(--n800)}
+  .dw-summary.ok{background:var(--ok-bg);border:1px solid var(--ok-bd);color:var(--n800)}
+  .dw-summary.info{background:var(--brand-50);border:1px solid var(--brand-200);color:var(--n800)}
+  .dtable{width:100%;border-collapse:collapse;font-size:12.5px}
+  .dtable th{text-align:left;font-family:var(--font-mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--n400);padding:0 8px 6px 0;font-weight:400}
+  .dtable td{padding:7px 8px 7px 0;border-top:1px solid var(--n100)}
+  .dtable td.r{text-align:right;font-family:var(--font-mono)}
+  .dtable .vpass{color:var(--ok-fg)}.dtable .vfail{color:var(--bad-fg)}
+  .pareto{display:flex;flex-direction:column;gap:7px}
+  .pbar{display:grid;grid-template-columns:120px 1fr 46px;gap:8px;align-items:center;font-size:11.5px}
+  .pbar .pt{background:var(--n100);border-radius:4px;height:14px;overflow:hidden}
+  .pbar .pt i{display:block;height:100%;background:var(--n600);border-radius:4px}
+  .pbar .pt i.hot{background:var(--bad-fg)}
+  .pbar .pv{font-family:var(--font-mono);font-size:11px;text-align:right;color:var(--n600)}
+  .srcchain{display:flex;flex-direction:column}
+  .srcrow{display:grid;grid-template-columns:74px 1fr;gap:10px;padding:8px 0;border-top:1px solid var(--n100);font-size:12.5px}
+  .srcrow:first-child{border-top:none}
+  .srcrow .sk{font-family:var(--font-mono);font-size:9px;color:var(--n400);text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
+  .srcrow .sv{font-weight:500}
+  .srcrow .sv .sm{display:block;font-weight:400;color:var(--n500);font-size:11.5px;margin-top:1px}
+  .impact{display:flex;align-items:baseline;gap:12px;background:var(--n50);border:1px solid var(--n200);border-radius:10px;padding:12px 14px}
+  .impact .if{font-family:var(--font-mono);font-size:24px;font-weight:600;letter-spacing:-.01em;line-height:1;flex:none}
+  .impact .il{font-size:11.5px;color:var(--n600);line-height:1.4}
+  .wbar{margin:2px 0}
+  .wbar .wt{height:16px;border-radius:4px;background:var(--n100);position:relative;overflow:hidden}
+  .wbar .wt .wa{position:absolute;top:0;bottom:0;left:0;background:var(--bad-fg);opacity:.8}
+  .wbar .wt .ws{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--n900)}
+  .wbar .wl{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;color:var(--n500);margin-top:3px}
+
+  .sage .qa{margin-top:14px}
+  .qbtn{display:block;width:100%;text-align:left;border:1px solid var(--n200);border-radius:10px;padding:11px 13px;font-size:13px;margin-bottom:9px;background:var(--n0)}
+  .qbtn:hover{border-color:var(--brand-400);background:var(--brand-50)}
+  .ans{border:1px solid var(--brand-200);background:var(--brand-50);border-radius:11px;padding:13px 15px;margin-bottom:12px}
+  .ans .aq{font-weight:600;font-size:13px;margin-bottom:6px}
+  .ans .at{font-size:13px;color:var(--n800);line-height:1.55}
+  .ans .cite{margin-top:9px;font-family:var(--font-mono);font-size:10.5px;color:var(--brand-700);display:flex;gap:6px;flex-wrap:wrap}
+  .ans .cite span{background:var(--n0);border:1px solid var(--brand-200);border-radius:5px;padding:2px 6px}
+  .sage-foot{font-size:11px;color:var(--n500);margin-top:6px;font-style:italic}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="logo">U</div><div><div class="bt">UnifyApps</div><div class="bs">MANUFACTURING</div></div></div>
+    <div class="navlabel">The run</div>
+    <div id="nav"></div>
+    <div class="side foot">One engine · 30+ plants<br>Illustrative demo data</div>
+  </aside>
+  <div class="main">
+    <div class="head">
+      <div class="plantsel"><span class="pl">Plant</span>
+        <select id="plant">
+          <option value="p12">Plant 12 · Aiken SC</option>
+          <option value="p04">Plant 04 · Dalton GA</option>
+          <option value="p21">Plant 21 · Cartersville GA</option>
+        </select>
+      </div>
+      <div class="head-right">
+        <div class="counter" id="counter"></div>
+        <button class="askbtn" data-act="sage"><span class="q">?</span> Ask Sage</button>
+      </div>
+    </div>
+    <div class="wrap" id="app"></div>
+  </div>
+</div>
+<div class="scrim" id="scrim" data-act="close"></div>
+<aside class="drawer" id="drawer"><div id="drawer-inner"></div></aside>
+<aside class="drawer sage" id="sage"><div id="sage-inner"></div></aside>
+
+<script>
+/* ============================ DATA ============================ */
+const D = {
+  style:'Cascade Twist · Dune 240', yarnLot:'Y-30918',
+  dye:{id:'DL-4471', qty:2950, shade:true, orders:['ORD-77310','ORD-77412']},
+  batch:{id:'B-88214', status:'On quality hold', since:'06:52'},
+  roll:{id:'R-11204', where:'End-of-line inspection', grade:'Borderline · 2nd occurrence'},
+  orders:{
+    'ORD-77310':{cust:'Kestrel Flooring · Atlanta GA', qty:1150, promised:'18 Aug', fixed:true},
+    'ORD-77412':{cust:'Brightwater Interiors · Nashville TN', qty:900, promised:'21 Aug', fixed:false}
+  },
+  lines:[{name:'Tufting 3', ach:511, std:520, oee:94},{name:'Backing 2', ach:369, std:420, oee:78, constraint:true, pm:'3 days', vib:true},{name:'Finishing 1', ach:598, std:610, oee:96}],
+  claims:[{id:'CLM-2291', mo:'Jun', batch:'B-88209', dye:'DL-4102', rolls:'R-11198 / R-11199', cause:'Split lot — two dye runs did not shade-match'},{id:'CLM-2205', mo:'May', cause:'Split-lot shade mismatch'},{id:'CLM-2154', mo:'Apr', cause:'Split-lot shade mismatch'}],
+  projFinish:'+5h 10m', rate:{ach:369, std:420, pct:-12}
+};
+const DET = {
+  inspection:[
+    {m:'Shade ΔE', spec:'≤ 2.5', act:'2.9', pass:false},
+    {m:'Streaking', spec:'None', act:'Slight', pass:false},
+    {m:'Width', spec:'12′0″ ±0.5″', act:'12′0.3″', pass:true},
+    {m:'Pile height', spec:'0.28″ ±0.02', act:'0.281″', pass:true},
+    {m:'Tuft bind', spec:'≥ 8.0 lb', act:'8.4 lb', pass:true}
+  ],
+  downtime:[
+    {r:'Material-out (yarn)', min:19, hot:true},
+    {r:'Changeover', min:12},
+    {r:'Quality hold', min:9, hot:true},
+    {r:'No operator', min:5},
+    {r:'Minor stops', min:3}
+  ],
+  run:{op:'J. Alvarez', start:'05:10', end:'06:40', speed:'369 yd/hr'},
+  prices:{first:24.8, second:18.6}
+};
+const OPTIONS = {
+  A:{t:'Re-sequence · run DL-4471 whole', d:'Hold both dates. Slots 2 and 3 swap; ORD-77412 runs first, the dye lot stays whole.', cost:'+$1,840', costl:'changeover', rec:true, eff:'reorder'},
+  B:{t:'Split DL-4471 across two dye runs', d:'Zero changeover — but two dye runs on a shade-critical lot.', cost:'$0', costl:'changeover', risky:true, eff:'split'},
+  C:{t:'Expedite · Saturday overtime', d:'Adds a sixth slot on an overtime shift to recover the hours.', cost:'+$6,200', costl:'overtime', eff:'expedite'}
+};
+const RUNS = {
+  b1:{label:'Cascade Twist', dye:'DL-4471', order:'ORD-77310', style:'cascade', fixed:true, hrs:3.5, acc:'#3f3f47'},
+  b2:{label:'Meridian', dye:'DL-4488', order:'ORD-77412', style:'meridian', hrs:2.5, acc:'#a16207'},
+  b3:{label:'Dune blend', order:'—', style:'dune', hrs:2, acc:'#0f766e'}
+};
+const LINES = [
+  {name:'Tufting 3', runs:[{label:'Aria Loop', hrs:2, acc:'#6b7280'},{label:'Dune blend', hrs:2.5, acc:'#0f766e'}]},
+  {name:'Backing 2', constraint:true},
+  {name:'Finishing 1', runs:[{label:'Cascade Twist', order:'ORD-77310', hrs:2.5, acc:'#3f3f47'}]}
+];
+const CO = {'cascade|meridian':920, 'dune|meridian':640, 'cascade|dune':1840};
+const FEED_BASE = [
+  {t:'06:38', lane:'auto', a:'Rowan', x:'Detected Backing 2 running <b>12% under plan</b> on DL-4471.'},
+  {t:'06:39', lane:'auto', a:'Rowan', x:'Computed finish-date impact: <b>+5h 10m</b>, ORD-77310 at risk.'},
+  {t:'06:40', lane:'auto', a:'Rowan', x:'Notified line lead + plant manager.'},
+  {t:'06:41', lane:'auto', a:'Rowan', x:'Costed and ranked 3 recovery options.'},
+  {t:'06:42', lane:'auto', a:'Sable', x:'Checked DL-4471 shade integrity across both committed orders.'},
+  {t:'06:43', lane:'limit', a:'Rowan', x:'Stopped short of re-sequencing Backing 2 — every option there <b>moves a promised date.</b>'},
+  {t:'06:44', lane:'person', a:'Rowan', x:'Escalated: <b>the dye lot or the date</b> is your call.'}
+];
+const FEED_AUTO_TAIL = {t:'06:43', lane:'auto', a:'Rowan', x:'Re-sequenced Backing 2 <b>automatically</b> — inside the limit set for this plant. DL-4471 ran whole.'};
+const RULES_BASE = [
+  {t:'Keep a dye lot whole when an order is shade-critical', s:'soft'},
+  {t:'Respect the 48-hour locked window', s:'hard'},
+  {t:'Campaign light → dark to cut changeover', s:'soft'}
+];
+const THRESH_ROWS = [
+  {key:'reseq', label:'Re-sequence where a promised date moves', sub:'Reorder runs when a customer date is at risk', wired:true},
+  {key:'grade2', label:'Grade a borderline or repeat fault', sub:'Decide the grade on a marginal roll', wired:true},
+  {key:'split', label:'Split a dye lot to hold a date', sub:'Break a shade-critical lot across dye runs'},
+  {key:'expedite', label:'Add overtime to recover a date', sub:'Schedule a weekend or extra shift'},
+  {key:'drift', label:'Log drift inside the alert band', sub:'Rate wobble within ±8% of plan'},
+  {key:'grade', label:'Grade a clear pass', sub:'First-quality rolls with no flags'},
+  {key:'report', label:'Publish shift & downtime reports', sub:'Assemble and send the standing reports'},
+  {key:'workorder', label:'Raise a maintenance work order', sub:'Open a work order from a machine signal'}
+];
+const PLANTS = {
+  p12:{name:'Plant 12 · Aiken'}, p04:{name:'Plant 04 · Dalton'}, p21:{name:'Plant 21 · Cartersville'}
+};
+const THR_DEFAULT = {
+  p12:{reseq:'ask', grade2:'ask', split:'ask', expedite:'limit', drift:'auto', grade:'auto', report:'auto', workorder:'limit'},
+  p04:{reseq:'auto', grade2:'limit', split:'ask', expedite:'auto', drift:'auto', grade:'auto', report:'auto', workorder:'auto'},
+  p21:{reseq:'ask', grade2:'ask', split:'ask', expedite:'ask', drift:'limit', grade:'limit', report:'auto', workorder:'ask'}
+};
+
+/* ============================ STATE ============================ */
+let S = {
+  view:'overview', plant:'p12',
+  decision:null,
+  seq:JSON.parse(JSON.stringify(SEQ_BASE_INIT())),
+  feed:JSON.parse(JSON.stringify(FEED_BASE)),
+  gradeDone:false, findingSent:false,
+  rules:JSON.parse(JSON.stringify(RULES_BASE)),
+  b2order:['b1','b2','b3'], splitDye:false, released:true, selRun:null,
+  thrByPlant:JSON.parse(JSON.stringify(THR_DEFAULT)),
+  fresh:new Set()
+};
+S.thr = S.thrByPlant[S.plant];
+function SEQ_BASE_INIT(){ return []; } // seq table retired in favour of the board
+const needs = () => {
+  const decisionNeeded = !S.decision && S.thr.reseq!=='auto';
+  const gradeNeeded = !S.gradeDone && S.thr.grade2!=='auto';
+  return (decisionNeeded?1:0) + (gradeNeeded?1:0);
+};
+
+/* ============================ NAV ============================ */
+const NAV = [
+  {v:'overview', t:'Overview', agent:'Inbox'},
+  {v:'sawyer', t:'Scheduling', agent:'Sawyer'},
+  {v:'sable', t:'Yarn', agent:'Sable'},
+  {v:'rowan', t:'Make', agent:'Rowan', badge:()=>(!S.decision && S.thr.reseq!=='auto')?1:0},
+  {v:'wren', t:'Quality', agent:'Wren', badge:()=>(!S.gradeDone && S.thr.grade2!=='auto')?1:0},
+  {v:'thresholds', t:'Thresholds', agent:'Limits'}
+];
+function renderNav(){
+  document.getElementById('nav').innerHTML = NAV.map(n=>{
+    const b = n.badge?n.badge():0;
+    return `<div class="nav ${S.view===n.v?'on':''}" data-act="nav" data-view="${n.v}"><span>${n.t} <span class="agent">${n.agent}</span></span>${b?`<span class="badge">${b}</span>`:''}</div>`;
+  }).join('');
+}
+function renderHeader(){
+  const c = needs();
+  const el = document.getElementById('counter');
+  el.className = 'counter'+(c?'':' clear');
+  el.innerHTML = c ? `Decisions waiting <span class="n">${c}</span>` : `Nothing waiting on you <span class="n">0</span>`;
+  document.getElementById('plant').value = S.plant;
+}
+
+/* ============================ VIEW HELPERS ============================ */
+function head(eyebrow, title, sub, right){
+  return `<div class="ey">${eyebrow}</div><div class="page-h"><div class="page-t">${title}</div>${right||''}</div><div class="page-s">${sub}</div>`;
+}
+const illus = `<span class="illus">Illustrative data</span>`;
+
+/* ============================ OVERVIEW ============================ */
+function vOverview(){
+  const q = [
+    {dot:'red', t:`Backing 2 running 12% under plan`, s:`${D.style} · DL-4471 · ORD-77310 at risk`, chip: S.thr.reseq==='auto'?'auto':'person', chipt: S.thr.reseq==='auto'?'Auto-resolved':'Needs you', act:'rowan'},
+    {dot: S.gradeDone||S.thr.grade2==='auto'?'purple':'red', t:`Batch B-88214 on quality hold`, s:`since 06:52 · roll R-11204 at inspection`, chip: (S.gradeDone||S.thr.grade2==='auto')?'auto':'person', chipt:(S.gradeDone||S.thr.grade2==='auto')?'Graded':'Needs you', act:'wren'},
+    {dot:'purple', t:`5 items resolved automatically`, s:`minor re-sequence · drift logged · reports built`, chip:'auto', chipt:'Automated'},
+    {dot:'amber', t:`1 item stopped at a limit`, s:`re-sequencing Backing 2 moves a promised date`, chip:'limit', chipt:'Inside limits'}
+  ];
+  const tiles = [
+    {l:'Attainment', v:'97%', d:'of planned volume', k:'attainment'},
+    {l:'Adherence', v:'62%', d:'planned sequence & day', k:'adherence', alert:true},
+    {l:'Backing 2 OEE', v:'78%', d:'constraint line', k:'oee', alert:true},
+    {l:'First-quality yield', v:'96.2%', d:'−1.4 pts vs plan', k:'yield'}
+  ];
+  const reps = [
+    {n:'01', t:'Shift handover report', x:'Built automatically', id:'shift'},
+    {n:'02', t:'Downtime Pareto', x:'By reason code', id:'pareto'},
+    {n:'03', t:'Attainment vs adherence', x:'The gap explained', id:'adh'},
+    {n:'04', t:'First-quality yield', x:'Roll by roll', id:'fqy'}
+  ];
+  return head(`Overview · ${PLANTS[S.plant].name}`, 'What needs a person this shift', 'The engine opens by telling you what to act on — not with a dashboard to go read.', illus)
+  + `<div class="grid" style="grid-template-columns:1fr">
+      <div class="card"><div class="ch"><div class="t">Exception inbox</div><div class="s">ranked by what it costs you</div></div>
+        ${q.map(e=>`<div class="exc ${e.act?'k':''}" ${e.act?`data-act="nav" data-view="${e.act}"`:''}><span class="dot ${e.dot}"></span><div><div class="ex-t">${e.t}</div><div class="ex-s">${e.s}</div></div><div class="ex-r"><span class="chip ${e.chip}">${e.chipt}</span>${e.act?'<span class="link">Open →</span>':''}</div></div>`).join('')}
+      </div>
+      <div><div class="ey" style="margin-bottom:10px">Live KPIs — click any to drill in</div>
+        <div class="tiles">${tiles.map(t=>`<div class="tile k ${t.alert?'alert':''}" data-act="drill" data-kind="kpi" data-id="${t.k}"><div class="tl">${t.l}<span class="link" style="font-size:10px">trend →</span></div><div class="tv">${t.v}</div><div class="td">${t.d}</div></div>`).join('')}</div>
+      </div>
+      <div class="card pad"><div class="ch" style="padding:0 0 12px;border:none"><div class="t">Reports that build themselves</div><div class="s">the low-hanging quick wins — nobody assembles these</div></div>
+        <div class="reps">${reps.map(r=>`<div class="rep k" data-act="drill" data-kind="report" data-id="${r.id}"><div class="rn">${r.n}</div><div class="rt">${r.t}</div><div class="rx">${r.x}</div></div>`).join('')}</div>
+      </div>
+    </div>`;
+}
+
+/* ============================ ROWAN ============================ */
+function vRowan(){
+  const l = D.lines[1];
+  const tiles = [
+    {l:'Achieved rate', v:'369', d:'yd/hr · std 420', k:'rate', alert:true},
+    {l:'Downtime', v:'48m', d:'reason code pending', k:'downtime', alert:true},
+    {l:'Yield', v:'94.1%', d:'−1.9 pts', k:'yield'},
+    {l:'Output', v:'2,940', d:'lin yd this shift', k:'output'}
+  ];
+  const gen = [{k:'Yarn lot', v:D.yarnLot, kind:'yarn', id:D.yarnLot},{k:'Dye lot', v:D.dye.id, kind:'dyelot', id:D.dye.id},{k:'Batch', v:D.batch.id, kind:'batch', id:D.batch.id},{k:'Roll', v:D.roll.id, kind:'roll', id:D.roll.id}];
+  const auto = !S.decision && S.thr.reseq==='auto';
+  const displayFeed = S.decision ? S.feed : (auto ? FEED_BASE.slice(0,5).concat([FEED_AUTO_TAIL]) : S.feed);
+  const decisionArea = S.decision ? resolvedBlock() : (auto ? autoBlock() : decisionBlock());
+  return head('Make · Rowan', `Backing 2 is ${D.rate.pct}% under plan`, 'Rowan reads the run against the released plan and raises what matters, to whom.', illus)
+  + `<div class="grid" style="grid-template-columns:1fr">
+      <div class="card pad"><div class="hero"><div class="fig neg">${D.projFinish}</div><div class="hm"><b>projected finish</b>, and still opening. Deviation open since 06:38 on ${D.style}.</div></div>
+        <div class="tiles" style="margin-top:14px">${tiles.map(t=>`<div class="tile k ${t.alert?'alert':''}" data-act="drill" data-kind="kpi" data-id="${t.k}"><div class="tl">${t.l}<span class="link" style="font-size:10px">trend →</span></div><div class="tv ${t.alert?'neg':''}">${t.v}</div><div class="td">${t.d}</div></div>`).join('')}</div>
+      </div>
+      <div class="grid" style="grid-template-columns:1.35fr 1fr">
+        <div class="card pad"><div class="ch" style="padding:0 0 10px;border:none"><div class="t">Rate — achieved vs plan</div><div class="s">shortfall since 06:38</div></div>${rateChart()}</div>
+        <div class="card pad"><div class="ch" style="padding:0 0 10px;border:none"><div class="t">Batch genealogy</div><div class="s">click any node</div></div>
+          <div class="trace">${gen.map((n,i)=>`<div class="tnode" data-act="drill" data-kind="${n.kind}" data-id="${n.id}"><div class="tk">${n.k}</div><div class="tv">${n.v}</div></div>${i<gen.length-1?'<span class="tarrow">→</span>':''}`).join('')}</div>
+          <div class="note" style="margin-top:12px">Written as the run happens — which is what makes a claim <b>settleable</b>, not arguable.</div>
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="card pad"><div class="ch" style="padding:0 0 10px;border:none"><div class="t">Machine health — Backing 2</div><div class="s">the constraint line</div></div>${machineHealth(l)}</div>
+        <div class="card"><div class="ch"><div class="t">Activity feed</div><div class="s">the argument for the decision</div></div>
+          <div class="feed">${displayFeed.map((f,i)=>`<div class="fitem k ${S.fresh.has(i)?'fresh':''}" data-act="drill" data-kind="feed" data-id="${i}"><span class="ft">${f.t}</span><span><span class="chip ${f.lane}">${f.lane==='auto'?'Automated':f.lane==='limit'?'Inside limits':'Needs you'}</span></span><span class="fx"><span class="fa">${f.a}</span> · ${f.x}</span></div>`).join('')}</div>
+        </div>
+      </div>
+      <div class="card">${decisionArea}</div>
+    </div>`;
+}
+function decisionBlock(){
+  return `<div class="dhead"><div class="dt">The dye lot or the date — your call</div><div class="ds">Rowan prepared 3 costed options. Click any to see the full breakdown.</div></div>
+    ${Object.entries(OPTIONS).map(([k,o])=>`<div class="opt" data-act="drill" data-kind="option" data-id="${k}">
+      <div><div class="ot">${o.t} ${o.rec?'<span class="chip good nb" style="margin-left:6px">Recommended</span>':''}${o.risky?'<span class="chip bad nb" style="margin-left:6px">Repeat of a known cause</span>':''}</div>
+      <div class="od">${o.d}</div>
+      ${o.risky?`<div class="hist">You did this on <b>DL-4102</b> in June — it produced claim <b>CLM-2291</b>. <span class="link" data-act="drill" data-kind="claim" data-id="CLM-2291">See the claim →</span></div>`:''}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><div><div class="cost">${o.cost}</div><div class="costl">${o.costl}</div></div><button class="accept" data-act="accept" data-opt="${k}">Accept</button></div></div>`).join('')}`;
+}
+function resolvedBlock(){
+  const o = OPTIONS[S.decision];
+  return `<div class="dhead"><div class="dt">Decision recorded — ${o.t}</div><div class="ds">The plan corrected itself, without a planning cycle.</div></div>
+    <div class="resolved"><div class="rt">✓ Accepted ${o.cost==='$0'?'at zero changeover':'· '+o.cost+' '+o.costl}</div>
+    <div class="rx">Sawyer rebuilt the released sequence · Sable held DL-4471 whole · line lead notified.</div>
+    <div class="btnrow"><button class="btn brand" data-act="nav" data-view="sawyer">See it in Sawyer's schedule →</button><button class="btn" data-act="undo">Undo</button></div></div>`;
+}
+function autoBlock(){
+  return `<div class="dhead"><div class="dt">Re-sequenced automatically</div><div class="ds">Inside the limit set for this plant — no one had to be asked.</div></div>
+    <div class="resolved"><div class="rt">✓ Rowan ran DL-4471 whole and re-sequenced Backing 2</div>
+    <div class="rx">Because <b>"Re-sequence where a promised date moves"</b> is set to <b>Auto</b> for ${PLANTS[S.plant].name}. Set it to Ask in Thresholds and this comes to a person instead.</div>
+    <div class="btnrow"><button class="btn brand" data-act="nav" data-view="sawyer">See it in Sawyer's schedule →</button><button class="btn" data-act="nav" data-view="thresholds">Open Thresholds →</button></div></div>`;
+}
+function machineHealth(l){
+  return `<div class="machrow"><div><b>OEE</b> <span class="mono" style="color:var(--n500)">availability × performance × quality</span></div><div class="mono" style="font-weight:600;color:var(--bad-fg)">${l.oee}%</div></div>
+    <div class="meter warn"><i style="width:${l.oee}%"></i></div>
+    <div class="machrow"><div>PM window</div><div class="mono">in ${l.pm}</div></div>
+    <div class="machrow"><div>Signal</div><div><span class="chip limit">Vibration rising</span></div></div>
+    <div class="btnrow"><button class="btn" data-act="drill" data-kind="machine" data-id="Backing 2">Machine detail →</button><button class="btn brand" data-act="drill" data-kind="workorder" data-id="new">Raise work order</button></div>
+    <div class="note" style="margin-top:11px"><b>Predictive maintenance</b> — not ready to demo at this stage. Needs your machine &amp; sensor data.</div>`;
+}
+function rateChart(){
+  const W=440,H=150,pad=26;
+  const plan=[420,420,420,420,420,420,420], ach=[416,410,405,398,388,376,369];
+  const xs=i=>pad+i*(W-pad*2)/(plan.length-1), ys=v=>H-22-((v-340)/(430-340))*(H-46);
+  const pl=plan.map((v,i)=>`${xs(i)},${ys(v)}`).join(' '), ac=ach.map((v,i)=>`${xs(i)},${ys(v)}`).join(' ');
+  const wash=`${pl} ${ach.map((v,i)=>`${xs(plan.length-1-i)},${ys(ach[plan.length-1-i])}`).join(' ')}`;
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" style="height:150px">
+    <polygon points="${wash}" fill="#b42318" opacity=".08"/>
+    <polyline points="${pl}" fill="none" stroke="#71717b" stroke-width="2"/>
+    <polyline points="${ac}" fill="none" stroke="#18181b" stroke-width="2"/>
+    <circle cx="${xs(6)}" cy="${ys(369)}" r="4" fill="#18181b"/><circle cx="${xs(6)}" cy="${ys(369)}" r="4" fill="none" stroke="#fff" stroke-width="2"/>
+    <text x="${xs(6)-2}" y="${ys(420)-8}" text-anchor="end" font-family="var(--font-mono)" font-size="11" fill="#71717b">420 plan</text>
+    <text x="${xs(6)-2}" y="${ys(369)+16}" text-anchor="end" font-family="var(--font-mono)" font-size="11" fill="#18181b" font-weight="600">369 now</text>
+    <line x1="${xs(2)}" y1="18" x2="${xs(2)}" y2="${H-20}" stroke="#d4d4d8" stroke-dasharray="3 3"/>
+    <text x="${xs(2)+4}" y="26" font-family="var(--font-mono)" font-size="10" fill="#a1a1ab">06:38 deviation</text></svg>`;
+}
+
+/* ============================ SAWYER (board + constraint model) ============================ */
+function coCost(a,b){ if(!a||!b) return 0; const k=[a.style,b.style].sort().join('|'); return CO[k]!=null?CO[k]:0; }
+function boardVerdict(){
+  const ord=S.b2order.map(id=>RUNS[id]);
+  let co=0; for(let i=0;i<ord.length-1;i++) co+=coCost(ord[i],ord[i+1]);
+  const fixedLast = S.b2order.indexOf('b1')===S.b2order.length-1;
+  let level='good', msg='Holds both dates — DL-4471 runs whole.';
+  if(S.splitDye){ level='bad'; msg='Splits DL-4471 — two dye runs won\'t shade-match. Last time this produced <b>CLM-2291</b>.'; }
+  else if(fixedLast){ level='bad'; msg='ORD-77310 <b>misses its fixed install</b> (18 Aug) — Backing 2 is running 12% slow.'; }
+  return {co:'$'+co.toLocaleString(), level, msg};
+}
+function selRun(id){ S.selRun=(S.selRun===id?null:id); render(); }
+function moveRun(dir){ if(!S.selRun) return; const i=S.b2order.indexOf(S.selRun),j=i+dir; if(j<0||j>=S.b2order.length) return; const a=S.b2order.slice(); [a[i],a[j]]=[a[j],a[i]]; S.b2order=a; S.released=false; render(); }
+function toggleSplit(){ S.splitDye=!S.splitDye; S.released=false; render(); }
+function reRelease(){ S.released=true; S.selRun=null; render(); }
+function vSawyer(){
+  const v=boardVerdict();
+  const other=(l)=> (l.runs||[]).map(r=>`<div class="run" style="flex:${r.hrs} 1 0"><span class="acc" style="background:${r.acc}"></span><span class="rl">${r.label}</span><span class="rm">${r.order||''}</span></div>`).join('<span class="co">▸</span>');
+  const b2=S.b2order.map(id=>{
+    const r=RUNS[id];
+    const moved=(S.decision&&(id==='b1'||id==='b2'))?' moved':'';
+    if(id==='b1'&&S.splitDye){
+      const half=`<div class="run dye${S.selRun==='b1'?' sel':''}${moved}" style="flex:${r.hrs/2} 1 0" data-act="selrun" data-id="b1"><span class="acc" style="background:${r.acc}"></span>`;
+      return `${half}<span class="rl">DL-4471 · A</span><span class="rm">split dye run</span></div><span class="co">purge</span>${half}<span class="rl">DL-4471 · B</span><span class="rm">shade risk</span></div>`;
+    }
+    return `<div class="run${id==='b1'?' dye':''}${S.selRun===id?' sel':''}${moved}" style="flex:${r.hrs} 1 0" data-act="selrun" data-id="${id}"><span class="acc" style="background:${r.acc}"></span><span class="rl">${r.label}</span><span class="rm">${r.dye?r.dye+' · ':''}${r.order&&r.order!=='—'?r.order:''}</span></div>`;
+  }).join('<span class="co">▸</span>');
+  const sel=S.selRun?RUNS[S.selRun]:null;
+  const ctl = sel?`<div class="bctl"><span class="sel-l">Selected · <b>${sel.label}</b>${sel.dye?' · '+sel.dye:''}</span>
+      <button class="btn" data-act="moverun" data-dir="-1">◀ Earlier</button><button class="btn" data-act="moverun" data-dir="1">Later ▶</button>
+      ${S.selRun==='b1'?`<button class="btn ${S.splitDye?'brand':''}" data-act="togglesplit">${S.splitDye?'↩ Run whole':'Split lot'}</button>`:''}
+      <span style="margin-left:auto"></span><span class="relchip ${S.released?'rel':'draft'}">${S.released?'Released':'Draft'}</span>${S.released?'':`<button class="btn brand" data-act="rerelease">Re-release</button>`}</div>`
+    :`<div class="bctl"><span class="sel-l">Click a run on <b>Backing 2</b> to move it — Sawyer checks the rules as you go.</span><span style="margin-left:auto"></span><span class="relchip ${S.released?'rel':'draft'}">${S.released?'Released':'Draft'}</span></div>`;
+  const rules = `<div class="card" style="margin-top:14px"><div class="ch"><div class="t">Constraint model</div><div class="s">the rules the schedule respects</div></div>
+    ${S.rules.map(r=>`<div class="rule ${r.loop?'fromloop':''}"><div class="rt2"><b>${r.t}</b>${r.detail?` <span style="color:var(--n500)">· ${r.detail}</span>`:''}</div><div>${r.loop?'<span class="chip auto nb">From Wren</span>':`<span class="chip mute nb">${r.s}</span>`}</div></div>`).join('')}</div>`;
+  return head('Scheduling · Sawyer','Visual schedule','Move a run — Sawyer recomputes the changeover and guards the dye-lot and date rules as you go.', illus)
+  + (S.decision?`<div class="note" style="margin-bottom:14px;border-color:var(--brand-300);background:var(--brand-50)"><b>The plan corrected itself.</b> Rowan re-sequenced Backing 2; Sable held DL-4471 whole. Nudge it further if you like.</div>`:'')
+  + `<div class="board">
+      <div class="ruler"><div></div><div class="ticks"><span>06:00</span><span>09:00</span><span>12:00</span><span>15:00</span><span>18:00</span></div></div>
+      <div class="brow"><div class="lname">Tufting 3</div><div class="track"><div class="lockwin"></div>${other(LINES[0])}</div></div>
+      <div class="brow"><div class="lname">Backing 2 <span class="lc">constraint · 12% slow</span></div><div class="track constraint"><div class="lockwin"></div>${b2}</div></div>
+      <div class="brow"><div class="lname">Finishing 1</div><div class="track"><div class="lockwin"></div>${other(LINES[2])}</div></div>
+      ${ctl}
+      <div class="verdict ${v.level}"><span class="chip ${v.level==='good'?'good':'bad'} nb">${v.level==='good'?'Holds':'Breaks a rule'}</span><span style="flex:1;min-width:260px"><b>Sawyer's check:</b> ${v.msg}</span><span class="vmono">changeover ${v.co}</span></div>
+      <div class="note" style="margin-top:12px">Shaded band = the locked window. Backing 2 is the constraint — an hour lost here is lost for the whole plant.</div>
+    </div>${rules}`;
+}
+
+/* ============================ SABLE (yarn) ============================ */
+function vSable(){
+  const held = !S.splitDye && !(S.decision==='B');
+  return head('Yarn · Sable', 'Yarn &amp; dye-lot optimization', 'Sizes dye lots and plans the creel so big orders hold their shade — with the least waste.', illus)
+  + `<div class="grid" style="grid-template-columns:1fr">
+      <div class="card pad"><div class="hero"><div class="fig pos">$8,400</div><div class="hm"><b>yarn waste avoided this week</b> by right-sizing dye lots to the orders they serve.</div></div>
+        <div class="tiles" style="margin-top:14px">
+          <div class="tile k" data-act="drill" data-kind="dyelot" data-id="DL-4471"><div class="tl">Shade-critical lots<span class="link" style="font-size:10px">open →</span></div><div class="tv">1</div><div class="td">DL-4471 · held whole</div></div>
+          <div class="tile"><div class="tl">Creel utilisation</div><div class="tv">92%</div><div class="td">+3 pts vs plan</div></div>
+          <div class="tile"><div class="tl">Yarn waste</div><div class="tv">4.1%</div><div class="td">of input</div></div>
+          <div class="tile"><div class="tl">Changeover purges</div><div class="tv">2</div><div class="td">light → dark</div></div>
+        </div>
+      </div>
+      <div class="card pad"><div class="ch" style="padding:0 0 12px;border:none"><div class="t">DL-4471 — run whole, or split to save changeover?</div><div class="s">the choice behind Rowan's Option A vs B, quantified</div></div>
+        <div class="cmp">
+          <div class="cmpc rec"><h4>Keep whole <span class="chip good nb">Recommended</span></h4><ul>
+            <li>Shade holds across both orders</li><li>ORD-77310 fixed install protected</li><li>Costs one changeover · <b>+$1,840</b></li><li>No claim exposure</li></ul></div>
+          <div class="cmpc risk"><h4>Split across two dye runs <span class="chip bad nb">Risk</span></h4><ul>
+            <li>Zero changeover · <b>$0</b></li><li>Two dye runs <b>won't shade-match</b></li><li>Last time → claim <span class="link" data-act="drill" data-kind="claim" data-id="CLM-2291">CLM-2291</span></li><li>Downgrade to seconds · margin gap</li></ul></div>
+        </div>
+        <div class="note" style="margin-top:12px">Sable holds a shade-critical lot whole unless a person overrides it — status now: <b>${held?'held whole':'split (shade risk)'}</b>.</div>
+      </div>
+      <div class="grid" style="grid-template-columns:1.3fr 1fr">
+        <div class="card pad"><div class="ch" style="padding:0 0 10px;border:none"><div class="t">Creel &amp; changeover-aware sequence</div><div class="s">light → dark to cut purges</div></div>
+          <div class="creel">
+            <div class="yb"><span class="ya" style="background:#d4d4d8"></span>Aria · light</div><span class="tarrow">→</span>
+            <div class="yb"><span class="ya" style="background:#a16207"></span>Meridian</div><span class="tarrow">→</span>
+            <div class="yb"><span class="ya" style="background:#3f3f47"></span>Cascade · DL-4471</div><span class="tarrow">→</span>
+            <div class="yb"><span class="ya" style="background:#0f766e"></span>Dune</div>
+          </div>
+          <div class="note" style="margin-top:12px">Ordered so each purge is cheap. A dark → light jump forces a full purge — Sable avoids it where the dates allow.</div>
+        </div>
+        <div class="card pad"><div class="ch" style="padding:0 0 10px;border:none"><div class="t">Yarn genealogy</div><div class="s">click a node</div></div>
+          <div class="trace"><div class="tnode" data-act="drill" data-kind="yarn" data-id="${D.yarnLot}"><div class="tk">Yarn lot</div><div class="tv">${D.yarnLot}</div></div><span class="tarrow">→</span><div class="tnode" data-act="drill" data-kind="dyelot" data-id="DL-4471"><div class="tk">Dye lot</div><div class="tv">DL-4471</div></div></div>
+          <div class="note" style="margin-top:12px">Sable ran this check at <b>06:42</b> — see the feed in <span class="link" data-act="nav" data-view="rowan">Make</span>.</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ============================ WREN (quality + slow loop) ============================ */
+function decideGrade(){ S.gradeDone=true; render(); }
+function sendFinding(){
+  if(S.findingSent) return;
+  S.findingSent=true;
+  S.rules.unshift({t:'Never split a dye lot where an order has a fixed install date', detail:'CLM-2291 · CLM-2205 · CLM-2154', s:'hard', loop:true});
+  render();
+}
+function vWren(){
+  const graded = S.gradeDone || S.thr.grade2==='auto';
+  const autoGrade = !S.gradeDone && S.thr.grade2==='auto';
+  const queue = [
+    {roll:'R-11202', s:'First quality', chip:'auto', chipt:'Auto-graded'},
+    {roll:'R-11203', s:'First quality', chip:'auto', chipt:'Auto-graded'},
+    {roll:'R-11204', s: graded?'Confirmed second':'Borderline · 2nd occurrence', chip: graded?(autoGrade?'auto':'good'):'person', chipt: graded?(autoGrade?'Auto-graded · limit':'Graded'):'Needs you', decide:!graded}
+  ];
+  const tb = [{k:'Claim', v:'CLM-2291', kind:'claim', id:'CLM-2291'},{k:'Rolls', v:'R-11198/99', kind:'roll', id:'R-11204'},{k:'Batch', v:'B-88209', kind:'batch', id:'B-88214'},{k:'Dye lot', v:'DL-4102', kind:'dyelot', id:'DL-4471'}];
+  return head('Quality · Wren', 'End-of-line quality &amp; traceback', 'Grades at end of line, traces a field claim to its batch, and sends the cause upstream.', illus)
+  + `<div class="grid" style="grid-template-columns:1fr">
+      <div class="card pad"><div class="hero"><div class="fig neg">$41,200</div><div class="hm"><b>margin at risk</b>, of which <span class="link" data-act="drill" data-kind="bridge" data-id="x">$18,400 traces to a sequence decision</span>. The loss is the first-quality-to-seconds margin gap, not scrap.</div></div></div>
+      <div class="card"><div class="ch"><div class="t">Inspection queue</div><div class="s">${graded?'all settled':'one needs a person'}</div></div>
+        ${queue.map(r=>`<div class="exc"><span class="dot ${r.decide?'red':'purple'}"></span><div><div class="ex-t mono">${r.roll}</div><div class="ex-s">${r.s}</div></div><div class="ex-r"><span class="chip ${r.chip}">${r.chipt}</span>${r.decide?'<button class="btn brand" data-act="decidegrade">Decide grade</button>':`<span class="idlink" data-act="drill" data-kind="roll" data-id="${r.roll}">detail →</span>`}</div></div>`).join('')}
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="card pad"><div class="ch" style="padding:0 0 10px;border:none"><div class="t">Claim traceback</div><div class="s">field claim → the run that caused it</div></div>
+          <div class="trace">${tb.map((n,i)=>`<div class="tnode" data-act="drill" data-kind="${n.kind}" data-id="${n.id}"><div class="tk">${n.k}</div><div class="tv">${n.v}</div></div>${i<tb.length-1?'<span class="tarrow">→</span>':''}`).join('')}</div>
+          <div class="note" style="margin-top:12px;border-style:solid;border-color:var(--bad-bd);background:var(--bad-bg)"><b>Cause:</b> the lot was split to protect a date, and the two dye runs did not shade-match. Time to trace: under a minute.</div>
+        </div>
+        <div class="card pad"><div class="ch" style="padding:0 0 10px;border:none"><div class="t">Pattern across batches</div><div class="s">3 claims, 4 months, one cause</div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${D.claims.map(c=>`<span class="chip mute nb" data-act="drill" data-kind="claim" data-id="${c.id}" style="cursor:pointer">${c.id} · ${c.mo}</span>`).join('')}</div>
+          <div style="font-size:12.5px;color:var(--n700);line-height:1.5">Every one traces to a dye lot split to hold a date. This isn't a one-off — it's a process change.</div>
+          ${S.findingSent
+            ? `<div class="resolved" style="margin:14px 0 0"><div class="rt">✓ Finding sent to Sawyer</div><div class="rx">A new rule now sits at the top of the constraint model.</div><div class="btnrow"><button class="btn brand" data-act="nav" data-view="sawyer">See it in the constraint model →</button></div></div>`
+            : `<div class="btnrow" style="margin-top:14px"><button class="btn brand" data-act="sendfinding">Send the finding to Sawyer →</button></div>`}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ============================ THRESHOLDS ============================ */
+function vThresholds(){
+  const modeCls = m => m==='auto'?'a':m==='limit'?'l':'k';
+  const rows = THRESH_ROWS.map(r=>{
+    const cur = S.thr[r.key];
+    const seg = [['auto','Auto','a'],['limit','Limit','l'],['ask','Ask','k']].map(([m,lab,cls])=>`<button class="${cur===m?'on '+cls:''}" data-act="setthr" data-k="${r.key}" data-m="${m}">${lab}</button>`).join('');
+    return `<div class="throw"><div><div class="thl">${r.label}${r.wired?'<span class="wired">Wired</span>':''}</div><div class="ths">${r.sub}</div></div><div class="seg">${seg}</div></div>`;
+  }).join('');
+  return head(`Thresholds · ${PLANTS[S.plant].name}`, 'The dial you set — per plant', 'Same engine everywhere; each plant sets its own limits. Switch plants (top left) and the dial changes with them.', illus)
+  + `<div class="note" style="margin-bottom:14px;border-color:var(--brand-300);background:var(--brand-50)">Two rows are <b>wired</b> in this demo. Set <b>"Re-sequence where a promised date moves"</b> to <b>Auto</b>, then open <span class="link" data-act="nav" data-view="rowan">Make</span> — Rowan resolves it itself and the counter clears. Set it back to <b>Ask</b> and it returns to a person.</div>
+     <div class="card">${rows}</div>
+     <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:14px">
+       <div class="note" style="border-style:solid"><b>What the agents never do</b><br>Run the line · write the demand plan · grade the product · overrule a quality hold.</div>
+       <div class="note" style="border-style:solid"><b>Sits on top of what you already run</b><br>Your scheduling · MES &amp; batch management · maintenance system. They read across them and write decisions back.</div>
+     </div>`;
+}
+
+/* ============================ STUB (unused) / DISPATCH ============================ */
+const VIEWS = {overview:vOverview, rowan:vRowan, sawyer:vSawyer, sable:vSable, wren:vWren, thresholds:vThresholds};
+
+/* ============================ DRAWER ============================ */
+function drawer(kind, id){
+  const set = (dk,dt,body)=>({dk,dt,body});
+  const kv = obj => `<dl class="kv">${Object.entries(obj).map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
+  const sec = (t,b)=>`<div class="dw-sec"><div class="st">${t}</div>${b}</div>`;
+  const pareto = rows => `<div class="pareto">${rows.map(d=>`<div class="pbar"><span>${d.r}</span><div class="pt"><i class="${d.hot?'hot':''}" style="width:${Math.round(d.min/rows[0].min*100)}%"></i></div><span class="pv">${d.v||d.min+'m'}</span></div>`).join('')}</div>`;
+  switch(kind){
+    case 'roll':{
+      const insp=DET.inspection, fails=insp.filter(x=>!x.pass).length, qty=148, gap=(DET.prices.first-DET.prices.second).toFixed(1), loss=Math.round(qty*(DET.prices.first-DET.prices.second)), graded=S.gradeDone||S.thr.grade2==='auto';
+      return set('Roll · quality', D.roll.id,
+        `<div class="dw-summary bad"><b>Borderline — flagged for shade variation.</b> ${fails} of ${insp.length} measurements out of spec, and it's the <b>2nd occurrence this week</b>, so it goes to a person rather than being auto-graded.${graded?' <br><br><b>Now graded:</b> confirmed second.':''}</div>`
+        + sec('End-of-line inspection · measured vs spec', `<table class="dtable"><thead><tr><th>Measurement</th><th>Spec</th><th style="text-align:right">Actual</th><th></th></tr></thead><tbody>${insp.map(x=>`<tr><td>${x.m}</td><td class="mono" style="color:var(--n500)">${x.spec}</td><td class="r">${x.act}</td><td class="r ${x.pass?'vpass':'vfail'}">${x.pass?'✓':'⚠'}</td></tr>`).join('')}</tbody></table><div class="wbar" style="margin-top:12px"><div class="wt"><div class="wa" style="width:${2.9/4*100}%"></div><div class="ws" style="left:${2.5/4*100}%"></div></div><div class="wl"><span>ΔE 0</span><span>tolerance 2.5</span><span>actual 2.9</span></div></div>`)
+        + sec("Where it's coming from", `<div class="srcchain"><div class="srcrow"><div class="sk">Yarn lot</div><div class="sv"><span class="idlink" data-act="drill" data-kind="yarn" data-id="${D.yarnLot}">${D.yarnLot}</span><span class="sm">Solution-dyed BCF · Dune 240</span></div></div><div class="srcrow"><div class="sk">Dye lot</div><div class="sv"><span class="idlink" data-act="drill" data-kind="dyelot" data-id="DL-4471">DL-4471</span><span class="sm">2,950 lin yd · shade-critical · ran under-rate</span></div></div><div class="srcrow"><div class="sk">Batch</div><div class="sv"><span class="idlink" data-act="drill" data-kind="batch" data-id="B-88214">B-88214</span><span class="sm">On quality hold since 06:52</span></div></div><div class="srcrow"><div class="sk">Run</div><div class="sv">Backing 2 · Shift A · ${DET.run.start}–${DET.run.end}<span class="sm">Operator ${DET.run.op} · ${DET.run.speed} against std 420</span></div></div></div>`)
+        + sec("Why it's an issue", `<div class="note">Backing 2 ran <b>12% under rate</b> and a shade drift crept in — dye ΔE reached <b>2.9 against a 2.5 tolerance</b>, with slight streaking. A one-off is watched; this is the <b>2nd this week</b> (prior: R-11189), which reads as a <b>pattern</b>, so Wren routes it to a person and traces the cause upstream.</div>`)
+        + sec('Commercial impact', `<div class="impact"><div class="if neg">$${loss.toLocaleString()}</div><div class="il"><b>margin at risk on this roll</b><br>${qty} lin yd × ($${DET.prices.first} first quality − $${DET.prices.second} seconds = $${gap}). A downgrade, not scrap.</div></div>`)
+        + sec('What happens next', `<div class="note"><b>Wren proposes:</b> grade as <b>second</b>, route to outlet, flag the dye-lot split as the cause. <b>You decide the grade</b> — the agent never grades the product.</div><div class="btnrow">${graded?'':'<button class="btn brand" data-act="decidegrade">Decide grade</button>'}<button class="btn" data-act="drill" data-kind="claim" data-id="CLM-2291">Could become a claim like CLM-2291 →</button></div>`));
+    }
+    case 'dyelot':{ const d=D.dye, split=(S.splitDye||S.decision==='B');
+      return set('Dye lot', d.id,
+        `<div class="dw-summary warn"><b>Shade-critical.</b> A large order must come from one dye lot — two lots of the same colour won't shade-match. DL-4471 is committed across two orders and sits at the centre of today's exception.</div>`
+        + sec('Lot detail', kv({Style:D.style, Colour:'Dune 240', 'Yarn lot':`<span class="idlink" data-act="drill" data-kind="yarn" data-id="${D.yarnLot}">${D.yarnLot}</span>`, Quantity:`${d.qty.toLocaleString()} lin yd`, Dyed:'Today 04:20 · vessel D-3', 'Shade target':'ΔE ≤ 2.5 vs standard', Status: split?'<span class="chip bad nb">Split — shade risk</span>':'<span class="chip good nb">Held whole</span>'}))
+        + sec('Committed to', `<table class="dtable"><thead><tr><th>Order</th><th>Customer</th><th style="text-align:right">Qty</th><th>Date</th></tr></thead><tbody>${d.orders.map(o=>{const x=D.orders[o];return `<tr><td><span class="idlink" data-act="drill" data-kind="order" data-id="${o}">${o}</span></td><td>${x.cust.split(' · ')[0]}</td><td class="r">${x.qty}</td><td class="${x.fixed?'vfail':''}">${x.promised}${x.fixed?' fixed':''}</td></tr>`}).join('')}<tr><td colspan="2" style="color:var(--n500)">Uncommitted</td><td class="r">900</td><td>—</td></tr></tbody></table><div class="wbar" style="margin-top:10px"><div class="wt"><div class="wa" style="width:${2050/2950*100}%;background:var(--brand-500);opacity:1"></div></div><div class="wl"><span>2,050 committed</span><span>2,950 total</span></div></div>`)
+        + sec('The risk if split', `<div class="note">Two dye runs land <b>~ΔE 3.4 apart</b> — past tolerance. That's what happened on <b>DL-4102</b> in June → <span class="link" data-act="drill" data-kind="claim" data-id="CLM-2291">CLM-2291</span>, a shade claim and a seconds downgrade. <span class="link" data-act="nav" data-view="sable">See Sable →</span></div>`));
+    }
+    case 'batch':
+      return set('Batch', D.batch.id,
+        `<div class="dw-summary bad"><b>On quality hold since 06:52.</b> Held at end-of-line inspection when roll R-11204 showed shade variation. Nothing ships from this batch until a person grades it.</div>`
+        + sec('Batch detail', kv({'Dye lot':`<span class="idlink" data-act="drill" data-kind="dyelot" data-id="DL-4471">DL-4471</span>`, Roll:`<span class="idlink" data-act="drill" data-kind="roll" data-id="R-11204">R-11204</span>`, Quantity:'296 lin yd', Line:'Backing 2', Shift:'A', Run:`${DET.run.start}–${DET.run.end}`}))
+        + sec('Hold record', kv({'Flagged by':'End-of-line inspection (auto)', At:'06:52', Reason:'<span class="chip bad nb">Shade variation</span>', Station:'Vision + ΔE', Escalated:'To Wren for grade'}))
+        + sec('What triggered it', `<div class="note">Shade ΔE reached <b>2.9 (tol 2.5)</b> with slight streaking — see the full inspection in the <span class="link" data-act="drill" data-kind="roll" data-id="R-11204">roll detail</span>. The batch behind it (B-88209) hit the same fault in May.</div>`)
+        + sec('Exposure', `<div class="impact"><div class="if neg">$918</div><div class="il">on the roll at risk if downgraded to seconds</div></div>`));
+    case 'order':{ const o=D.orders[id]||D.orders['ORD-77310'];
+      return set('Order', id,
+        `<div class="dw-summary ${o.fixed?'bad':'info'}"><b>${o.fixed?'Fixed install — at risk.':'Movable date.'}</b> ${o.fixed?"A crew is booked for 18 Aug; the date can't move, and the Backing 2 slowdown puts the finish at +5h 10m.":'The promised date has slack — the room Option A uses.'}</div>`
+        + sec('Order', kv({Customer:o.cust, Product:D.style, Quantity:`${o.qty.toLocaleString()} lin yd`, 'Order value':'$'+Math.round(o.qty*24.8).toLocaleString(), 'Dye lot':`<span class="idlink" data-act="drill" data-kind="dyelot" data-id="DL-4471">DL-4471</span>`}))
+        + sec('Commitment', kv({Promised:o.promised, Type:o.fixed?'<span class="chip bad nb">Fixed install · crew booked</span>':'<span class="chip mute nb">Movable ± a few days</span>', 'Current slot':'Backing 2 · slot 2', 'Projected finish':o.fixed?'<span class="vfail">+5h 10m · margin tight</span>':'On time'}))
+        + (o.fixed?sec('If it misses',`<div class="note">A missed install means a re-booked crew and a likely chargeback — which is why Option A (hold the date, pay the changeover) beats Option B (save changeover, risk shade and the date).</div>`):''));
+    }
+    case 'claim':{ const c=D.claims.find(x=>x.id===id)||D.claims[0];
+      return set('Claim', c.id,
+        `<div class="dw-summary bad"><b>Field claim — shade mismatch.</b> ${c.id} came back from the field: two areas of the same order didn't match. Traced to a dye lot split to protect a date.</div>`
+        + sec('Claim', kv({Raised:c.mo+' 2026', Product:D.style, 'Root cause':c.cause, Batch:c.batch||'B-88209', 'Dye lot':c.dye||'DL-4102', Rolls:c.rolls||'R-11198 / R-11199'}))
+        + sec('Traceback', `<div class="srcchain"><div class="srcrow"><div class="sk">Claim</div><div class="sv">${c.id}<span class="sm">Customer credit issued</span></div></div><div class="srcrow"><div class="sk">Rolls</div><div class="sv">${c.rolls||'R-11198 / R-11199'}<span class="sm">Graded seconds after the fact</span></div></div><div class="srcrow"><div class="sk">Batch</div><div class="sv">${c.batch||'B-88209'}</div></div><div class="srcrow"><div class="sk">Dye lot</div><div class="sv">${c.dye||'DL-4102'}<span class="sm">Split into 2 runs · ΔE 3.4 apart</span></div></div></div>`)
+        + sec('Cost', `<div class="impact"><div class="if neg">$18,400</div><div class="il">credit + seconds downgrade on this claim</div></div>`)
+        + sec('The pattern', pareto(D.claims.map((x,i)=>({r:x.id+' · '+x.mo, min:100-i*18, v:'split lot'}))) + `<div class="note" style="margin-top:10px">Three claims in four months, one cause. This is what Wren sends upstream to become a scheduling rule.</div>`));
+    }
+    case 'machine':{ const l=D.lines[1];
+      return set('Machine', 'Backing 2',
+        `<div class="dw-summary warn"><b>Constraint line — running 12% under plan.</b> An hour lost here is lost for the whole plant. OEE 78%, PM due in 3 days, and a rising vibration signature.</div>`
+        + sec('OEE = 78%', [['Availability','86%',86],['Performance','92%',92],['Quality','98%',98]].map(a=>`<div class="machrow"><div>${a[0]}</div><div class="mono">${a[1]}</div></div><div class="meter"><i style="width:${a[2]}%"></i></div>`).join('') + `<div class="note" style="margin-top:10px">Performance is the drag — 369 against a 420 standard.</div>`)
+        + sec('Downtime this shift · 48 min', pareto(DET.downtime))
+        + sec('Maintenance', kv({'Last PM':'28 Jul · 14 days ago', 'Next PM':'in 3 days', Vibration:'<span class="chip limit nb">Rising · 4.2 mm/s</span>', Baseline:'2.1 mm/s'}))
+        + sec('Act', `<div class="btnrow"><button class="btn brand" data-act="drill" data-kind="workorder" data-id="new">Raise work order →</button></div><div class="note" style="margin-top:11px"><b>Predictive maintenance</b> — the model that flags this before failure — is not demo-ready; it needs your machine data.</div>`));
+    }
+    case 'workorder':
+      return set('Work order', 'WO — draft',
+        `<div class="dw-summary info"><b>Plug-in.</b> Rowan raises the work order and routes it into your maintenance system with the context already attached — no re-keying.</div>`
+        + sec('Work order', kv({Asset:'Backing 2', Trigger:'Vibration 4.2 mm/s · PM in 3 days', Priority:'<span class="chip limit nb">High</span>', 'Route to':'your maintenance system', Context:'Deviation + run at risk (ORD-77310)', Raised:'Rowan · auto-drafted'}))
+        + sec('Not yet', `<div class="note"><b>Predictive maintenance</b> — the model that would raise this <i>before</i> the signal — is not demo-ready. It needs your machine data.</div>`));
+    case 'kpi':{
+      const M={rate:{t:'Achieved rate',v:'369 yd/hr',st:'bad',s:'Achieving 369 against a 420 standard — a −12% deviation, past the ±8% alert band, so it escalated at 06:38.',ex:'downtime'},
+        downtime:{t:'Downtime',v:'48 min',st:'bad',s:'48 minutes lost this shift. The reason code is still pending — captured at the machine, often entered late from memory.',ex:'downtime'},
+        yield:{t:'Yield',v:'94.1%',st:'warn',s:'Good output ÷ input, down 1.9 pts on the shortfall and the shade hold.',ex:'yield'},
+        output:{t:'Output',v:'2,940 lin yd',st:'warn',s:'This shift — behind the plan curve by ~340 yd and opening.'},
+        attainment:{t:'Attainment',v:'97%',st:'ok',s:"Of the volume you said you'd make. It looks fine on its own — which is the trap."},
+        adherence:{t:'Adherence',v:'62%',st:'bad',s:'Whether you made it in the planned sequence, on the planned day. The 35-pt gap to attainment is the whole argument for scheduling.'},
+        oee:{t:'Backing 2 OEE',v:'78%',st:'bad',s:'Availability 86% × Performance 92% × Quality 98% on the constraint line. Performance is the drag.'}};
+      const m=M[id]||{t:'KPI',v:'—',st:'info',s:''};
+      let ex='';
+      if(m.ex==='downtime') ex=sec('Downtime by reason code', pareto(DET.downtime));
+      if(m.ex==='yield') ex=sec('Loss by type', pareto([{r:'Shade variation',min:2.1,hot:true,v:'2.1%'},{r:'Edge trim',min:1.0,v:'1.0%'},{r:'Tuft faults',min:0.5,v:'0.5%'}]));
+      return set('KPI', m.t,
+        `<div class="dw-summary ${m.st}">${m.s}</div>`
+        + sec('Trend · last 7 readings', miniTrend(id)+`<div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;color:var(--n500);margin-top:2px"><span>06:00</span><span>now</span></div>`)
+        + ex
+        + sec('Current', `<div class="impact"><div class="if ${m.st==='bad'?'neg':m.st==='ok'?'pos':''}">${m.v}</div><div class="il">latest reading${m.st==='bad'?' · past the alert band':''}</div></div>`));
+    }
+    case 'report':{
+      const R={
+        shift:{t:'Shift handover report', b:`<div class="dw-summary info">Assembled automatically for the oncoming shift — nobody builds it. Open items, KPIs and exceptions in one place.</div>`+sec('Open items',kv({'Quality hold':'B-88214 · needs grade','At-risk order':'ORD-77310 · +5h 10m','Work order':'Backing 2 · vibration','Deviation':'Backing 2 · −12%'}))+sec('Shift KPIs',kv({Attainment:'97%',Adherence:'62%',Yield:'94.1%','First quality':'96.2%'}))},
+        pareto:{t:'Downtime Pareto', b:`<div class="dw-summary info">Downtime ranked by reason code · 48 min total this shift.</div>`+sec('By reason code',pareto(DET.downtime))+`<div class="note">Material-out and quality hold both tie back to the DL-4471 dye-lot problem.</div>`},
+        adh:{t:'Attainment vs adherence', b:`<div class="dw-summary bad">97% attainment against 62% adherence — you made the volume, in the wrong order.</div>`+sec('The gap',`<div class="impact"><div class="if neg">35 pts</div><div class="il">volume looks fine while customer promises break — the gap is the number that matters</div></div>`)+sec('What broke sequence',kv({'ORD-77310':'ran late · Backing 2 slow','ORD-77412':'re-sequenced','2 minor runs':'caught up Friday'}))},
+        fqy:{t:'First-quality yield', b:`<div class="dw-summary warn">96.2% first quality, −1.4 pts vs plan. The miss is shade, not build.</div>`+sec('Downgrades by cause',pareto([{r:'Shade variation',min:1.4,hot:true,v:'−1.4pt'},{r:'Edge / width',min:0.3,v:'−0.3pt'},{r:'Tuft faults',min:0.1,v:'−0.1pt'}]))+sec('Value',`<div class="impact"><div class="if neg">$41,200</div><div class="il">margin at risk this week from downgrades</div></div>`)}
+      };
+      const r=R[id]||{t:'Report',b:''};
+      return set('Report', r.t, `<div style="margin-bottom:14px;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--n500)"><span class="chip auto nb">Quick win · L</span> built automatically — nobody assembled this</div>`+r.b);
+    }
+    case 'option':{ const o=OPTIONS[id];
+      const rows = id==='A'?[['Changeover · dark→light purge','+$1,840'],['Overtime','$0'],['Shade / claim risk','None'],['Net','+$1,840']]:id==='B'?[['Changeover','$0'],['Shade mismatch risk','High → CLM-2291'],['Expected seconds downgrade','−$18,400'],['Net exposure','−$18,400']]:[['Changeover','+$640'],['Saturday overtime','+$6,200'],['Net','+$6,840']];
+      return set('Recovery option', o.t,
+        `<div class="dw-summary ${o.risky?'bad':o.rec?'ok':'warn'}">${o.d}${o.rec?" <b>Rowan's recommendation.</b>":''}</div>`
+        + sec('Cost breakdown', `<table class="dtable"><tbody>${rows.map((r,i)=>`<tr><td ${i===rows.length-1?'style="font-weight:600"':''}>${r[0]}</td><td class="r" ${i===rows.length-1?'style="font-weight:600"':''}>${r[1]}</td></tr>`).join('')}</tbody></table>`)
+        + sec('Effect on the schedule', kv({'DL-4471':o.eff==='split'?'<span class="chip bad nb">Split · shade risk</span>':'Runs whole','ORD-77310 · fixed':o.eff==='split'?'<span class="vfail">At risk</span>':'Held','ORD-77412':'Held','Backing 2':o.eff==='reorder'?'Slots 2 & 3 swap':o.eff==='expedite'?'+ Saturday slot':'Split run'}))
+        + (o.risky?sec('History',`<div class="hist">Done on DL-4102 in June → <span class="link" data-act="drill" data-kind="claim" data-id="CLM-2291">CLM-2291</span>. The product argues against it before you decide.</div>`):'')
+        + `<div class="dw-sec"><button class="btn brand" data-act="accept" data-opt="${id}">Accept this option</button></div>`);
+    }
+    case 'bridge':
+      return set('Margin bridge', '$18,400',
+        `<div class="dw-summary bad">Of the $41,200 at risk this week, this share traces directly to one scheduling decision — a split dye lot.</div>`
+        + sec('The bridge', `<table class="dtable"><tbody><tr><td>Total margin at risk</td><td class="r">$41,200</td></tr><tr><td>— from the split decision</td><td class="r vfail">$18,400</td></tr><tr><td>— shade / process (other)</td><td class="r">$14,600</td></tr><tr><td>— build / edge faults</td><td class="r">$8,200</td></tr></tbody></table>`)
+        + sec("Why it's one loop", `<div class="note">A grade problem here was a <b>sequencing choice upstream</b>. Recoverable by never splitting a shade-critical lot — which is exactly the rule Wren sends to Sawyer.</div>`)
+        + sec('Traces to', `<div class="btnrow"><button class="btn" data-act="drill" data-kind="claim" data-id="CLM-2291">CLM-2291 →</button><button class="btn" data-act="drill" data-kind="dyelot" data-id="DL-4471">DL-4471 →</button></div>`));
+    case 'yarn':
+      return set('Yarn lot', D.yarnLot,
+        `<div class="dw-summary info"><b>Solution-dyed BCF · Dune 240.</b> Colour goes into the polymer at extrusion — there's no separate dye step, so shade is set at the yarn and lot continuity is everything.</div>`
+        + sec('Yarn detail', kv({Construction:'Bulked continuous filament', Colour:'Dune 240 · solution-dyed', Denier:'1,150 / 68 filament', 'Supplier lot':'SY-2231', Quantity:'3,400 lb', 'Creel position':'Backing 2 · creel B'}))
+        + sec('Dye lots from it', `<div class="srcchain"><div class="srcrow"><div class="sk">Dye lot</div><div class="sv"><span class="idlink" data-act="drill" data-kind="dyelot" data-id="DL-4471">DL-4471</span><span class="sm">2,950 lin yd · shade-critical</span></div></div></div>`)
+        + sec("Sable's role", `<div class="note">Sable sizes and sequences this lot so big orders hold their shade with the least waste. <span class="link" data-act="nav" data-view="sable">Open Sable →</span></div>`));
+    case 'feed':{ const f=(S.decision?S.feed:(!S.decision&&S.thr.reseq==='auto'?FEED_BASE.slice(0,5).concat([FEED_AUTO_TAIL]):S.feed))[+id]; if(!f) return set('Activity','—','<div class="note">—</div>');
+      const laneName=f.lane==='auto'?'Automated':f.lane==='limit'?'Inside limits':'Needs you', laneWhy=f.lane==='auto'?'The agent just did this — nobody had to ask, chase or assemble it.':f.lane==='limit'?'The agent acted to the edge of the limit you set, then stopped and asked.':'Judgement — the agent prepared everything; the call is yours.';
+      return set('Activity · '+f.a, f.t,
+        `<div class="dw-summary ${f.lane==='auto'?'info':f.lane==='limit'?'warn':'bad'}"><span class="chip ${f.lane}">${laneName}</span><div style="margin-top:8px;font-size:13.5px">${f.x}</div></div>`
+        + sec('What this lane means', `<div class="note">${laneWhy}</div>`)
+        + sec('Event', kv({Agent:f.a, Time:f.t, Lane:laneName, 'Set by':'Thresholds · '+PLANTS[S.plant].name})));
+    }
+    default: return set('Detail', id, '<div class="note">No detail wired yet.</div>');
+  }
+}
+function miniTrend(id){
+  const series={rate:[416,410,405,398,388,376,369],adherence:[91,84,78,72,68,64,62],oee:[88,86,84,82,80,79,78],attainment:[99,98,98,97,97,97,97],yield:[97,96,96,95,95,94,94],downtime:[8,14,22,30,38,44,48],output:[420,830,1250,1700,2150,2560,2940]};
+  const s=series[id]||[1,2,3,4,5,6,7]; const mn=Math.min(...s),mx=Math.max(...s),W=380,H=64;
+  const pts=s.map((v,i)=>`${8+i*(W-16)/(s.length-1)},${H-6-((v-mn)/((mx-mn)||1))*(H-14)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}"><polyline points="${pts}" fill="none" stroke="${id==='downtime'?'#b42318':'#18181b'}" stroke-width="2"/></svg>`;
+}
+function openDrawer(kind, id){
+  const {dk,dt,body}=drawer(kind,id);
+  document.getElementById('drawer-inner').innerHTML = `<div class="dw-head"><div><div class="dk">${dk}</div><div class="dttl mono">${dt}</div></div><button class="x" data-act="close">✕</button></div><div class="dw-body">${body}</div>`;
+  document.getElementById('drawer').classList.add('on'); document.getElementById('scrim').classList.add('on');
+}
+function openSage(){
+  const qs=[
+    {q:'Why is Backing 2 under plan?', a:'Backing 2 is running <b>369 against a 420 standard</b> — a −12% deviation, past the ±8% alert band, open since 06:38. The downtime reason code is still pending at the machine.', cite:['Run record · Backing 2','Deviation 06:38']},
+    {q:'How do we usually fix streaking on dark lots?', a:'Standard work: check dye-lot continuity first. <b>Last time this appeared (B-88209, May)</b> the cause was a split dye lot that didn\'t shade-match; the fix was to re-run whole and downgrade the affected rolls.', cite:['SOP · Shade variation','B-88209 · May']},
+    {q:'What happened last time we split DL-4102?', a:'Splitting DL-4102 in June produced claim <b>CLM-2291</b> — two dye runs, shade mismatch, seconds downgrade. Part of a 3-claim pattern.', cite:['CLM-2291']}
+  ];
+  window._SAGE=qs;
+  document.getElementById('sage-inner').innerHTML = `<div class="dw-head"><div><div class="dk">Sage · ask across the run</div><div class="dttl">What do you want to know?</div></div><button class="x" data-act="close">✕</button></div>
+    <div class="dw-body"><div class="note" style="margin-bottom:6px">Answered from your SOPs and what the plant has already solved. Cited. Sage never makes the call.</div><div class="qa" id="sage-qa"></div>${qs.map((x,i)=>`<button class="qbtn" data-act="sage-ask" data-i="${i}">${x.q}</button>`).join('')}<div class="sage-foot">Try one — the answer appears above, with its sources.</div></div>`;
+  document.getElementById('sage').classList.add('on'); document.getElementById('scrim').classList.add('on');
+}
+function sageAsk(i){ const x=window._SAGE[i]; document.getElementById('sage-qa').insertAdjacentHTML('afterbegin', `<div class="ans"><div class="aq">${x.q}</div><div class="at">${x.a}</div><div class="cite">${x.cite.map(c=>`<span>${c}</span>`).join('')}</div></div>`); }
+function closeAll(){ document.getElementById('drawer').classList.remove('on'); document.getElementById('sage').classList.remove('on'); document.getElementById('scrim').classList.remove('on'); }
+
+/* ============================ ACTIONS ============================ */
+function accept(opt){
+  S.decision=opt;
+  const eff=OPTIONS[opt].eff;
+  S.b2order=['b1','b2','b3']; S.splitDye=false; S.selRun=null; S.released=true;
+  if(eff==='reorder') S.b2order=['b2','b1','b3'];
+  if(eff==='split') S.splitDye=true;
+  const base=S.feed.length;
+  S.feed.push({t:'now', lane:'person', a:'You', x:`Chose <b>${OPTIONS[opt].t}</b>.`});
+  S.feed.push({t:'now', lane:'auto', a:'Rowan', x:'Told Sawyer to re-plan; notified the floor.'});
+  S.feed.push({t:'now', lane:'auto', a:'Sawyer', x:'Rebuilt and released the sequence. <b>The plan corrected itself.</b>'});
+  S.fresh=new Set([base,base+1,base+2]);
+  closeAll(); render();
+}
+function undo(){
+  S.decision=null; S.feed=JSON.parse(JSON.stringify(FEED_BASE)); S.fresh=new Set();
+  S.b2order=['b1','b2','b3']; S.splitDye=false; S.selRun=null; S.released=true;
+  S.gradeDone=false; S.findingSent=false; S.rules=JSON.parse(JSON.stringify(RULES_BASE));
+  render();
+}
+
+/* ============================ RENDER + EVENTS ============================ */
+function render(){ renderNav(); renderHeader(); document.getElementById('app').innerHTML=(VIEWS[S.view]||vOverview)(); window.scrollTo(0,0); }
+document.addEventListener('click', e=>{
+  const el=e.target.closest('[data-act]'); if(!el) return;
+  const a=el.dataset.act;
+  if(a==='nav'){ S.view=el.dataset.view; S.fresh=new Set(); render(); }
+  else if(a==='drill'){ openDrawer(el.dataset.kind, el.dataset.id); }
+  else if(a==='sage'){ openSage(); }
+  else if(a==='sage-ask'){ sageAsk(+el.dataset.i); }
+  else if(a==='accept'){ accept(el.dataset.opt); }
+  else if(a==='undo'){ undo(); }
+  else if(a==='selrun'){ selRun(el.dataset.id); }
+  else if(a==='moverun'){ moveRun(+el.dataset.dir); }
+  else if(a==='togglesplit'){ toggleSplit(); }
+  else if(a==='rerelease'){ reRelease(); }
+  else if(a==='decidegrade'){ decideGrade(); }
+  else if(a==='sendfinding'){ sendFinding(); }
+  else if(a==='setthr'){ S.thr[el.dataset.k]=el.dataset.m; render(); }
+  else if(a==='close'){ closeAll(); }
+});
+document.getElementById('plant').addEventListener('change', e=>{ S.plant=e.target.value; S.thr=S.thrByPlant[S.plant]; S.selRun=null; render(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeAll(); });
+render();
+</script>
+</body>
+</html>
